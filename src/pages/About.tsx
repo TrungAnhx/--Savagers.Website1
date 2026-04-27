@@ -1,4 +1,5 @@
 import { ChevronRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function About() {
   return (
@@ -84,9 +85,9 @@ export default function About() {
 
           <div className="text-center mt-32 animate-fade-rise-delay-2">
             <p className="text-muted-foreground mb-8">Ready to disappear into the sound?</p>
-            <a href="/mixtapes" className="liquid-glass rounded-full px-10 py-4 text-sm text-foreground hover:scale-[1.03] transition-transform inline-flex items-center gap-3">
-              Enter The Archives <ChevronRight size={16} />
-            </a>
+            <Link to="/mixtapes" className="liquid-glass rounded-full px-10 py-4 text-sm text-foreground hover:scale-[1.03] transition-transform inline-flex items-center gap-3">
+              Enter The Frequencies <ChevronRight size={16} />
+            </Link>
           </div>
         </div>
       </div>

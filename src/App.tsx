@@ -20,11 +20,18 @@ function Layout() {
   const [isShuffle, setIsShuffle] = useState(false);
   const [repeatMode, setRepeatMode] = useState<'none' | 'all' | 'one'>('none');
   
-  const [volume, setVolume] = useState(1);
-  const [previousVolume, setPreviousVolume] = useState(1);
+  const [volume, setVolume] = useState(0.75);
+  const [previousVolume, setPreviousVolume] = useState(0.75);
   
   const audioRef = useRef<HTMLAudioElement>(null);
   const location = useLocation();
+
+  // Set initial volume when audio element is ready
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+    }
+  }, []);
 
   useEffect(() => {
     if (currentTrack && audioRef.current) {
