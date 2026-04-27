@@ -194,7 +194,7 @@ function Layout() {
   const isMixtapes = location.pathname === '/mixtapes';
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden flex flex-col bg-background text-foreground">
+    <div className={`relative min-h-screen w-full overflow-hidden flex flex-col text-foreground ${isZenMode ? '' : 'bg-background'}`}>
       {isZenMode && (
         <div 
           className="fixed inset-0 z-[100] cursor-pointer" 
