@@ -1,7 +1,14 @@
+import { useState } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-export default function About() {
+interface AboutProps {
+  onAddNote: (note: string) => void;
+}
+
+export default function About({ onAddNote }: AboutProps) {
+  const [note, setNote] = useState('');
+
   return (
     <div className="relative min-h-screen w-full flex flex-col pt-32 pb-40 px-6 z-10">
       
@@ -59,27 +66,27 @@ export default function About() {
             </div>
           </div>
 
-          <div className="border-y border-border/40 py-24 animate-fade-rise-delay-2">
-            <h2 className="text-3xl md:text-5xl text-foreground mb-16 text-center" style={{ fontFamily: "'Lora', serif" }}>
-              Our Core Pillars
-            </h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
-              <div className="flex flex-col items-center">
-                <div className="w-16 h-16 rounded-full bg-white/5 border border-border/50 flex items-center justify-center mb-6 text-2xl text-foreground">I</div>
-                <h3 className="text-xl text-foreground mb-4 font-serif">Absolute Focus</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">No distractions. Only the tools and environments necessary for deep, uninterrupted cognitive labor.</p>
-              </div>
-              <div className="flex flex-col items-center">
-                <div className="w-16 h-16 rounded-full bg-white/5 border border-border/50 flex items-center justify-center mb-6 text-2xl text-foreground">II</div>
-                <h3 className="text-xl text-foreground mb-4 font-serif">Sonic Curation</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">A meticulously selected archive of ambient and low-fidelity frequencies designed to mask the chaos.</p>
-              </div>
-              <div className="flex flex-col items-center">
-                <div className="w-16 h-16 rounded-full bg-white/5 border border-border/50 flex items-center justify-center mb-6 text-2xl text-foreground">III</div>
-                <h3 className="text-xl text-foreground mb-4 font-serif">Intellectual Depth</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">A repository of essays, chronicles, and thoughts honoring logic, philosophy, and software evolution.</p>
-              </div>
+          <div className="mb-32">
+            <h2 className="text-3xl text-foreground mb-8 text-center" style={{ fontFamily: "'Lora', serif" }}>Leave a whisper...</h2>
+            <div className="max-w-md mx-auto liquid-glass p-6 rounded-2xl border border-white/10">
+                <input 
+                    type="text" 
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    placeholder="Viết tâm sự của bạn vào đây..."
+                    className="w-full bg-transparent text-foreground placeholder:text-muted-foreground outline-none mb-4"
+                />
+                <button 
+                    onClick={() => {
+                        if (note.trim()) {
+                            onAddNote(note);
+                            setNote('');
+                        }
+                    }}
+                    className="w-full py-2 bg-foreground text-background rounded-full hover:bg-white transition-colors text-sm font-medium"
+                >
+                    Gửi tâm sự
+                </button>
             </div>
           </div>
 

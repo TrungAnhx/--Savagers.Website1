@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { Volume2, VolumeX, Play, Pause, SkipForward, SkipBack, Disc3, Shuffle, Repeat, Repeat1 } from 'lucide-react';
+import { Volume2, VolumeX, Play, Pause, SkipForward, SkipBack, Disc3, Shuffle, Repeat, Repeat1, Moon } from 'lucide-react';
 import Home from './pages/Home';
 import Mixtapes from './pages/Mixtapes';
 import Journal from './pages/Journal';
 import About from './pages/About';
+import FloatingNotes from './components/FloatingNotes';
+import notesData from './data/notes.json';
 
 interface Track {
   name: string;
@@ -17,7 +19,14 @@ function Layout() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
   const [playlist, setPlaylist] = useState<Track[]>([]);
+  const [isZenMode, setIsZenMode] = useState(false);
+  const [customNotes, setCustomNotes] = useState<string[]>(() => {
+    const saved = localStorage.getItem('savagers_notes');
+    return saved ? JSON.parse(saved) : [];
+  });
   
+  const allNotes = [...notesData, ...customNotes];
+
   const [isShuffle, setIsShuffle] = useState(() => {
     const saved = localStorage.getItem('savagers_isShuffle');
     return saved !== null ? JSON.parse(saved) : false;
@@ -175,11 +184,25 @@ function Layout() {
     }
   };
 
+  const handleAddNote = (note: string) => {
+    const newNotes = [...customNotes, note];
+    setCustomNotes(newNotes);
+    localStorage.setItem('savagers_notes', JSON.stringify(newNotes));
+  };
+
   const isHome = location.pathname === '/';
   const isMixtapes = location.pathname === '/mixtapes';
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden flex flex-col bg-background text-foreground">
+      {isZenMode && (
+        <div 
+          className="fixed inset-0 z-[100] cursor-pointer" 
+          onClick={() => setIsZenMode(false)}
+          title="Click anywhere to exit Zen Mode"
+        ></div>
+      )}
+      
       {/* Background Audio */}
       <audio 
         ref={audioRef} 
@@ -191,8 +214,12 @@ function Layout() {
         src={currentTrack?.url || "/musics/default-lofi.mp3"}
       />
 
-      {/* Global Navigation Bar */}
-      <nav className={`absolute top-0 w-full z-50 flex flex-row items-center justify-between px-8 py-6 max-w-7xl mx-auto left-1/2 -translate-x-1/2`}>
+      <FloatingNotes notes={allNotes} />
+
+      {/* Main Content Wrapper (fades out in Zen Mode) */}
+      <div className={`flex-1 flex flex-col relative w-full h-full transition-opacity duration-1000 ${isZenMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+        {/* Global Navigation Bar */}
+        <nav className={`absolute top-0 w-full z-50 flex flex-row items-center justify-between px-8 py-6 max-w-7xl mx-auto left-1/2 -translate-x-1/2`}>
         {/* Left Side: Logo */}
         <div className="flex-1 flex justify-start">
           <Link to="/" style={{ fontFamily: "'Lora', serif" }} className="text-3xl tracking-tight text-foreground">
@@ -210,6 +237,14 @@ function Layout() {
 
         {/* Right Side: CTA + Music Toggle */}
         <div className="flex-1 flex items-center justify-end gap-4">
+          <button 
+            onClick={() => setIsZenMode(true)}
+            className="text-foreground hover:text-muted-foreground transition-colors cursor-pointer flex items-center justify-center"
+            title="Zen Mode"
+          >
+            <Moon size={20} />
+          </button>
+          
           {isHome && (
             <>
               <button 
@@ -234,7 +269,7 @@ function Layout() {
           <Route path="/" element={<Home isPlaying={isPlaying} togglePlay={togglePlay} />} />
           <Route path="/mixtapes" element={<Mixtapes currentTrack={currentTrack} isPlaying={isPlaying} onPlayTrack={handlePlayTrack} />} />
           <Route path="/journal" element={<Journal />} />
-          <Route path="/about" element={<About />} />
+          <Route path="/about" element={<About onAddNote={handleAddNote} />} />
         </Routes>
       </div>
 
@@ -309,6 +344,7 @@ function Layout() {
           </div>
         </div>
       )}
+      </div> {/* End of main content fade wrapper */}
     </div>
   );
 }
