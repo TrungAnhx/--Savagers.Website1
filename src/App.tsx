@@ -217,7 +217,7 @@ function Layout() {
       <FloatingNotes notes={allNotes} />
 
       {/* Main Content Wrapper (fades out in Zen Mode) */}
-      <div className={`flex-1 flex flex-col relative w-full h-full transition-opacity duration-1000 ${isZenMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+      <div className={`flex-1 flex flex-col relative w-full h-full transition-opacity duration-1000 ${isZenMode ? 'opacity-0 pointer-events-none' : 'opacity-100 bg-background'}`}>
         {/* Global Navigation Bar */}
         <nav className={`absolute top-0 w-full z-50 flex flex-row items-center justify-between px-8 py-6 max-w-7xl mx-auto left-1/2 -translate-x-1/2`}>
         {/* Left Side: Logo */}
