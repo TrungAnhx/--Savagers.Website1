@@ -1,0 +1,35 @@
+name: Fetch Latest Articles
+
+on:
+  schedule:
+    # Chạy tự động vào lúc 00:00 UTC (khoảng 7h sáng giờ VN) mỗi ngày
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+    # Cho phép bạn bấm nút chạy thủ công trên GitHub nếu muốn
+
+jobs:
+  fetch-and-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Fetch Script
+        run: node scripts/fetch.cjs
+
+      - name: Commit and Push changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action Bot"
+          git add src/data/articles.json
+          # Chỉ commit nếu có thay đổi (có bài viết mới)
+          git commit -m "Auto-update: Fetched latest articles" || echo "No changes to commit"
+          git push

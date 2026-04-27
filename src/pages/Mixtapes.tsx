@@ -1,0 +1,160 @@
+import { Play, Disc3 } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+
+interface Track {
+  name: string;
+  duration: string;
+  artist: string;
+  url: string;
+}
+
+interface MixtapesProps {
+  currentTrack: Track | null;
+  isPlaying: boolean;
+  onPlayTrack: (track: Track, playlist: Track[]) => void;
+}
+
+const backgroundVideos = [
+  "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260324_151826_c7218672-6e92-402c-9e45-f1e0f454bdc4.mp4",
+  "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260325_132944_a0d124bb-eaa1-4082-aa30-2310efb42b4b.mp4",
+  "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260319_055001_8e16d972-3b2b-441c-86ad-2901a54682f9.mp4",
+  "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260406_133058_0504132a-0cf3-4450-a370-8ea3b05c95d4.mp4",
+  "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260405_171521_25968ba2-b594-4b32-aab7-f6b69398a6fa.mp4"
+];
+
+const rawCategories = [
+  {
+    title: "Global Covers & Hits",
+    description: "Timeless vocals and acoustic covers for deep focus.",
+    tracks: [
+      { name: "I'm Not The Only One", duration: "3:59", artist: "Sam Smith", url: "/musics/track1.mp3" },
+      { name: "Patience", duration: "3:22", artist: "Take That", url: "/musics/track2.mp3" },
+      { name: "Modern Loneliness", duration: "4:12", artist: "Lauv (Alec Chambers Cover)", url: "/musics/track5.mp3" },
+      { name: "Be Happy", duration: "3:18", artist: "Dixie D'Amelio (Alec Chambers Cover)", url: "/musics/track6.mp3" },
+    ]
+  },
+  {
+    title: "Vietnamese Vibes",
+    description: "Local lo-fi and R&B beats to chill out.",
+    tracks: [
+      { name: "Hello Em Có Khỏe Không", duration: "3:45", artist: "Dfoxie37 & Myhoa & Tuann", url: "/musics/track3.mp3" },
+      { name: "Think About U", duration: "3:10", artist: "Kay Châu Anh", url: "/musics/track4.mp3" },
+    ]
+  },
+  {
+    title: "Piano Covers",
+    description: "Soothing piano instrumentals for absolute silence.",
+    tracks: [
+      { name: "Nơi Này Có Anh", duration: "4:20", artist: "Sơn Tùng M-TP", url: "/musics/track7.mp3" },
+      { name: "Modern Loneliness", duration: "3:55", artist: "Lauv (Keudae Cover)", url: "/musics/track8.mp3" },
+      { name: "Âm Thầm Bên Em", duration: "4:50", artist: "Sơn Tùng M-TP", url: "/musics/track9.mp3" },
+      { name: "Xe Đạp", duration: "4:15", artist: "Thùy Chi ft. M4U", url: "/musics/track10.mp3" },
+    ]
+  }
+];
+
+export default function Mixtapes({ currentTrack, isPlaying, onPlayTrack }: MixtapesProps) {
+  // Chọn ngẫu nhiên 1 video khi mới vào
+  const [bgIndex, setBgIndex] = useState(() => Math.floor(Math.random() * backgroundVideos.length));
+
+  useEffect(() => {
+    // Chuyển video mỗi 5 phút (300000 ms)
+    const interval = setInterval(() => {
+      setBgIndex((prev) => (prev + 1) % backgroundVideos.length);
+    }, 300000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const currentBg = backgroundVideos[bgIndex];
+
+  // Sort tracks alphabetically within each category and create a flattened playlist
+  const { sortedCategories, fullPlaylist } = useMemo(() => {
+    const sorted = rawCategories.map(cat => ({
+      ...cat,
+      tracks: [...cat.tracks].sort((a, b) => a.name.localeCompare(b.name))
+    }));
+    const playlist = sorted.flatMap(cat => cat.tracks);
+    return { sortedCategories: sorted, fullPlaylist: playlist };
+  }, []);
+
+  return (
+    <div className="relative min-h-screen w-full flex flex-col pt-32 pb-40 px-6">
+      {/* Background Video */}
+      <video
+        key={currentBg}
+        autoPlay
+        loop
+        muted
+        playsInline
+        style={{ willChange: 'transform, opacity' }}
+        className="absolute inset-0 w-full h-full object-cover z-0 opacity-80"
+      >
+        <source src={currentBg} type="video/mp4" />
+      </video>
+
+      {/* Gentle gradient to ensure text readability without hiding the video */}
+      <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-background/40 to-background/90 z-0 pointer-events-none"></div>
+
+      <div className="max-w-4xl mx-auto relative z-10 w-full">
+        <header className="mb-20 animate-fade-rise">
+          <h1 className="text-6xl md:text-8xl text-foreground mb-6" style={{ fontFamily: "'Lora', serif" }}>
+            The Archives.
+          </h1>
+          <p className="text-muted-foreground text-lg max-w-xl leading-relaxed">
+            Curated frequencies divided by mood and atmosphere. Select a tape, disappear into the sound.
+          </p>
+        </header>
+
+        <div className="space-y-24">
+          {sortedCategories.map((category, idx) => (
+            <section key={idx} className={`animate-fade-rise-delay-${idx + 1}`}>
+              <div className="border-b border-border/40 pb-6 mb-8">
+                <h2 className="text-3xl text-foreground mb-2 flex items-center gap-3" style={{ fontFamily: "'Lora', serif" }}>
+                  <Disc3 className="text-muted-foreground" size={24} />
+                  {category.title}
+                </h2>
+                <p className="text-muted-foreground text-sm">{category.description}</p>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                {category.tracks.map((track, trackIdx) => {
+                  const isCurrentTrack = currentTrack?.name === track.name;
+                  return (
+                    <div 
+                      key={trackIdx}
+                      onClick={() => onPlayTrack(track, fullPlaylist)}
+                      className={`group flex items-center justify-between p-4 rounded-lg transition-colors cursor-pointer ${isCurrentTrack ? 'bg-white/10' : 'hover:bg-white/5'}`}
+                    >
+                      <div className="flex items-center gap-6">
+                        {isCurrentTrack && isPlaying ? (
+                          <div className="w-6 flex justify-center items-end gap-[2px] h-4">
+                            <span className="w-1 bg-foreground h-full animate-[bounce_1s_infinite]"></span>
+                            <span className="w-1 bg-foreground h-2/3 animate-[bounce_1.2s_infinite_0.2s]"></span>
+                            <span className="w-1 bg-foreground h-4/5 animate-[bounce_0.8s_infinite_0.4s]"></span>
+                          </div>
+                        ) : (
+                          <span className={`text-sm font-mono w-6 text-center ${isCurrentTrack ? 'text-foreground' : 'text-muted-foreground/50'}`}>
+                            {trackIdx + 1}
+                          </span>
+                        )}
+                        
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isCurrentTrack ? 'bg-white/20' : 'bg-white/5 group-hover:bg-white/10'}`}>
+                          <Play size={14} className={`ml-0.5 ${isCurrentTrack ? 'text-foreground opacity-100' : 'text-foreground opacity-50 group-hover:opacity-100'}`} fill={isCurrentTrack ? "currentColor" : "none"} />
+                        </div>
+                        <div>
+                          <h3 className={`text-base font-medium ${isCurrentTrack ? 'text-foreground' : 'text-muted-foreground group-hover:text-foreground'}`}>{track.name}</h3>
+                          <p className="text-muted-foreground text-xs">{track.artist}</p>
+                        </div>
+                      </div>
+                      <span className="text-muted-foreground text-sm font-mono">{track.duration}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
