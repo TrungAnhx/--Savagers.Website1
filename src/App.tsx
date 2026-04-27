@@ -4,6 +4,7 @@ import { Volume2, VolumeX, Play, Pause, SkipForward, SkipBack, Disc3, Shuffle, R
 import Home from './pages/Home';
 import Mixtapes from './pages/Mixtapes';
 import Journal from './pages/Journal';
+import About from './pages/About';
 
 interface Track {
   name: string;
@@ -174,9 +175,9 @@ function Layout() {
         {/* Center: Navigation Links */}
         <ul className="hidden md:flex items-center justify-center gap-8 flex-none">
           <li><Link to="/" className={`text-sm transition-colors hover:text-foreground ${isHome ? 'text-foreground' : 'text-muted-foreground'}`}>Home</Link></li>
-          <li><Link to="/mixtapes" className={`text-sm transition-colors hover:text-foreground ${isMixtapes ? 'text-foreground' : 'text-muted-foreground'}`}>Mixtapes</Link></li>
-          <li><Link to="/journal" className={`text-sm transition-colors hover:text-foreground ${location.pathname === '/journal' ? 'text-foreground' : 'text-muted-foreground'}`}>Journal</Link></li>
-          <li><a href="#" className="text-sm text-muted-foreground transition-colors hover:text-foreground">About</a></li>
+          <li><Link to="/mixtapes" className={`text-sm transition-colors hover:text-foreground ${isMixtapes ? 'text-foreground' : 'text-muted-foreground'}`}>Frequencies</Link></li>
+          <li><Link to="/journal" className={`text-sm transition-colors hover:text-foreground ${location.pathname === '/journal' ? 'text-foreground' : 'text-muted-foreground'}`}>Chronicles</Link></li>
+          <li><Link to="/about" className={`text-sm transition-colors hover:text-foreground ${location.pathname === '/about' ? 'text-foreground' : 'text-muted-foreground'}`}>About</Link></li>
         </ul>
 
         {/* Right Side: CTA + Music Toggle */}
@@ -205,12 +206,13 @@ function Layout() {
           <Route path="/" element={<Home isPlaying={isPlaying} togglePlay={togglePlay} />} />
           <Route path="/mixtapes" element={<Mixtapes currentTrack={currentTrack} isPlaying={isPlaying} onPlayTrack={handlePlayTrack} />} />
           <Route path="/journal" element={<Journal />} />
+          <Route path="/about" element={<About />} />
         </Routes>
       </div>
 
       {/* Global Music Player Bar */}
       {currentTrack && isMixtapes && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[calc(100%-3rem)] max-w-3xl z-50 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl px-6 py-4 flex items-center justify-between animate-[fade-rise_0.3s_ease-out] shadow-2xl">
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[calc(100%-3rem)] max-w-3xl z-50 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl px-6 py-4 flex items-center justify-between animate-fade-rise-center shadow-2xl">
           {/* Track Info */}
           <div className="flex items-center gap-4 w-1/3">
             <div className="w-12 h-12 rounded bg-muted/50 flex items-center justify-center overflow-hidden relative">

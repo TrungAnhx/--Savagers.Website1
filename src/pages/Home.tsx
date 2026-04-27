@@ -36,13 +36,13 @@ export default function Home({ isPlaying, togglePlay }: HomeProps) {
         loop
         muted
         playsInline
-        className="fixed inset-0 w-full h-full object-cover z-[-1]"
+        className="fixed inset-0 w-full h-full object-cover z-0 pointer-events-none"
       >
         <source src="/home_bg_4k.mp4" type="video/mp4" />
       </video>
 
-      {/* Dark gradient to ensure content below the hero is readable */}
-      <div className="fixed inset-0 bg-gradient-to-b from-transparent via-background/80 to-background z-[-1] pointer-events-none"></div>
+      {/* Dark gradient to ensure content below the hero is readable without completely hiding the video */}
+      <div className="fixed inset-0 bg-gradient-to-b from-transparent via-background/40 to-background/90 z-0 pointer-events-none"></div>
 
       {/* Hero Section (Full Screen) */}
       <section className="relative z-10 flex flex-col items-center justify-center text-center px-6 min-h-screen">
@@ -63,7 +63,7 @@ export default function Home({ isPlaying, togglePlay }: HomeProps) {
           }}
           className="animate-fade-rise-delay-2 liquid-glass rounded-full px-14 py-5 text-base text-foreground mt-12 hover:scale-[1.03] cursor-pointer inline-block"
         >
-          Explore Archives
+          Explore Frequencies
         </button>
         <button onClick={togglePlay} className="mt-4 text-muted-foreground hover:text-foreground transition-colors text-sm opacity-0 absolute">
           {isPlaying ? 'Playing' : 'Paused'}
@@ -82,7 +82,7 @@ export default function Home({ isPlaying, togglePlay }: HomeProps) {
             </p>
           </div>
           <Link to="/journal" className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2 group">
-            View All Journal <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+            View All Chronicles <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
 
