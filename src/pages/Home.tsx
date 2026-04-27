@@ -93,9 +93,7 @@ export default function Home({ isPlaying, togglePlay }: HomeProps) {
               className="group cursor-pointer bg-white/5 border border-border/40 rounded-2xl p-8 hover:bg-white/10 transition-colors flex flex-col animate-[fade-rise_0.6s_ease-out]"
               style={{ animationDelay: `${idx * 0.15}s`, animationFillMode: 'both' }}
               onClick={() => {
-                navigate('/journal');
-                // The actual full-article open logic on Journal page would be nice, 
-                // but for now, we just redirect to the Journal list.
+                navigate('/journal', { state: { articleId: article.id } });
               }}
             >
               <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground font-mono mb-6">

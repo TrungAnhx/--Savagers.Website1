@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { BookOpen, ChevronLeft, Calendar, Clock } from 'lucide-react';
 import articlesData from '../data/articles.json';
 
@@ -16,7 +17,18 @@ interface Article {
 const articles: Article[] = articlesData as Article[];
 
 export default function Journal() {
+  const location = useLocation();
   const [activeArticle, setActiveArticle] = useState<Article | null>(null);
+
+  useEffect(() => {
+    if (location.state && location.state.articleId) {
+      const foundArticle = articles.find(a => a.id === location.state.articleId);
+      if (foundArticle) {
+        setActiveArticle(foundArticle);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+  }, [location.state]);
 
   return (
     <div className="relative min-h-screen w-full flex flex-col pt-32 pb-40 px-6 z-10">

@@ -17,14 +17,35 @@ function Layout() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
   const [playlist, setPlaylist] = useState<Track[]>([]);
-  const [isShuffle, setIsShuffle] = useState(false);
-  const [repeatMode, setRepeatMode] = useState<'none' | 'all' | 'one'>('none');
   
-  const [volume, setVolume] = useState(0.75);
-  const [previousVolume, setPreviousVolume] = useState(0.75);
+  const [isShuffle, setIsShuffle] = useState(() => {
+    const saved = localStorage.getItem('savagers_isShuffle');
+    return saved !== null ? JSON.parse(saved) : false;
+  });
+  
+  const [repeatMode, setRepeatMode] = useState<'none' | 'all' | 'one'>(() => {
+    const saved = localStorage.getItem('savagers_repeatMode');
+    return saved !== null ? JSON.parse(saved) : 'none';
+  });
+  
+  const [volume, setVolume] = useState(() => {
+    const saved = localStorage.getItem('savagers_volume');
+    return saved !== null ? parseFloat(saved) : 0.75;
+  });
+  
+  const [previousVolume, setPreviousVolume] = useState(() => {
+    const saved = localStorage.getItem('savagers_previousVolume');
+    return saved !== null ? parseFloat(saved) : 0.75;
+  });
   
   const audioRef = useRef<HTMLAudioElement>(null);
   const location = useLocation();
+
+  // Save states to localStorage
+  useEffect(() => { localStorage.setItem('savagers_isShuffle', JSON.stringify(isShuffle)); }, [isShuffle]);
+  useEffect(() => { localStorage.setItem('savagers_repeatMode', JSON.stringify(repeatMode)); }, [repeatMode]);
+  useEffect(() => { localStorage.setItem('savagers_volume', volume.toString()); }, [volume]);
+  useEffect(() => { localStorage.setItem('savagers_previousVolume', previousVolume.toString()); }, [previousVolume]);
 
   // Set initial volume when audio element is ready
   useEffect(() => {
