@@ -25,7 +25,7 @@ export default function About({ onAddNote, isZenMode }: AboutProps) {
         style={{ willChange: 'transform, opacity' }}
         className="fixed inset-0 w-full h-full object-cover z-[-1] opacity-20 mix-blend-screen"
       >
-        <source src="/subtle-cinematic-animation-in-1080p-high-resolutio.mp4" type="video/mp4" />
+        <source src="/backgrounds/bg1.mp4" type="video/mp4" />
       </video>
 
       {/* Grid Pattern Overlay */}

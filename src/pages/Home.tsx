@@ -39,7 +39,7 @@ export default function Home({ isPlaying, togglePlay, isZenMode }: HomeProps) {
         playsInline
         className="fixed inset-0 w-full h-full object-cover z-[-1] pointer-events-none"
       >
-        <source src="/home_bg_4k.mp4" type="video/mp4" />
+        <source src="/backgrounds/home_bg_4k.mp4" type="video/mp4" />
       </video>
 
       {/* Dark gradient to ensure content below the hero is readable without completely hiding the video */}
