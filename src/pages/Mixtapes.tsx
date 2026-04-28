@@ -88,13 +88,13 @@ export default function Mixtapes({ currentTrack, isPlaying, onPlayTrack }: Mixta
         muted
         playsInline
         style={{ willChange: 'transform, opacity' }}
-        className="absolute inset-0 w-full h-full object-cover z-0 opacity-80"
+        className="fixed inset-0 w-full h-full object-cover z-0 opacity-80 pointer-events-none"
       >
         <source src={currentBg} type="video/mp4" />
       </video>
 
       {/* Gentle gradient to ensure text readability without hiding the video */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-background/40 to-background/90 z-0 pointer-events-none"></div>
+      <div className="fixed inset-0 bg-gradient-to-b from-background/90 via-background/40 to-background/90 z-0 pointer-events-none"></div>
 
       <div className="max-w-4xl mx-auto relative z-10 w-full">
         <header className="mb-20 animate-fade-rise">
