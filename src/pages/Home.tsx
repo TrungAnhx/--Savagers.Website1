@@ -37,13 +37,13 @@ export default function Home({ isPlaying, togglePlay, isZenMode }: HomeProps) {
         loop
         muted
         playsInline
-        className="fixed inset-0 w-full h-full object-cover z-[-1] pointer-events-none"
+        className="fixed inset-0 w-full h-full object-cover z-0 pointer-events-none"
       >
         <source src="/backgrounds/home_bg_4k.mp4" type="video/mp4" />
       </video>
 
       {/* Dark gradient to ensure content below the hero is readable without completely hiding the video */}
-      <div className="fixed inset-0 bg-gradient-to-b from-transparent via-background/40 to-background/90 z-[-1] pointer-events-none"></div>
+      <div className="fixed inset-0 bg-gradient-to-b from-transparent via-background/40 to-background/90 z-0 pointer-events-none"></div>
 
       <div className={`relative z-10 flex-1 flex flex-col transition-opacity duration-1000 ${isZenMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
         {/* Hero Section (Full Screen) */}
