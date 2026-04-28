@@ -16,9 +16,10 @@ interface Article {
 interface HomeProps {
   isPlaying: boolean;
   togglePlay: () => void;
+  isZenMode?: boolean;
 }
 
-export default function Home({ isPlaying, togglePlay }: HomeProps) {
+export default function Home({ isPlaying, togglePlay, isZenMode }: HomeProps) {
   const [featuredArticles, setFeaturedArticles] = useState<Article[]>([]);
   const navigate = useNavigate();
 
@@ -44,8 +45,9 @@ export default function Home({ isPlaying, togglePlay }: HomeProps) {
       {/* Dark gradient to ensure content below the hero is readable without completely hiding the video */}
       <div className="fixed inset-0 bg-gradient-to-b from-transparent via-background/40 to-background/90 z-[-1] pointer-events-none"></div>
 
-      {/* Hero Section (Full Screen) */}
-      <section className="relative z-10 flex flex-col items-center justify-center text-center px-6 min-h-screen">
+      <div className={`relative z-10 flex-1 flex flex-col transition-opacity duration-1000 ${isZenMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+        {/* Hero Section (Full Screen) */}
+        <section className="relative z-10 flex flex-col items-center justify-center text-center px-6 min-h-screen">
         <h1 
           className="animate-fade-rise text-5xl sm:text-7xl md:text-8xl leading-[0.95] tracking-[-2.46px] max-w-7xl font-normal text-foreground"
           style={{ fontFamily: "'Lora', serif" }}
@@ -120,6 +122,7 @@ export default function Home({ isPlaying, togglePlay }: HomeProps) {
           ))}
         </div>
       </section>
+      </div>
     </div>
   );
 }

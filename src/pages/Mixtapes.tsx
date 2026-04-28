@@ -12,15 +12,15 @@ interface MixtapesProps {
   currentTrack: Track | null;
   isPlaying: boolean;
   onPlayTrack: (track: Track, playlist: Track[]) => void;
+  isZenMode?: boolean;
 }
 
 const backgroundVideos = [
-  "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260406_133058_0504132a-0cf3-4450-a370-8ea3b05c95d4.mp4",
-  "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260405_171521_25968ba2-b594-4b32-aab7-f6b69398a6fa.mp4",
-  "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260416_101255_3099d3e4-0cf3-4450-a370-8ea3b05c95d4.mp4",
-  "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260422_112520_ee819691-f2e8-4c54-bb77-3fb72c84eaa5.mp4",
-  "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260423_161253_c72b1869-400f-45ed-ac0c-52f68c2ed5bd.mp4",
-  "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260424_064411_9e9d7f84-9277-41f4-ab10-59172d89e6be.mp4"
+  "/backgrounds/bg1.mp4",
+  "/backgrounds/bg2.mp4",
+  "/backgrounds/bg3.mp4",
+  "/backgrounds/bg4.mp4",
+  "/backgrounds/bg5.mp4"
 ];
 
 const rawCategories = [

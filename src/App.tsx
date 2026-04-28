@@ -216,10 +216,10 @@ function Layout() {
 
       <FloatingNotes notes={allNotes} />
 
-      {/* Main Content Wrapper (fades out in Zen Mode) */}
-      <div className={`flex-1 flex flex-col relative w-full h-full transition-opacity duration-1000 ${isZenMode ? 'opacity-0 pointer-events-none' : 'opacity-100 bg-background'}`}>
+      {/* Main Content Wrapper */}
+      <div className="flex-1 flex flex-col relative w-full h-full">
         {/* Global Navigation Bar */}
-        <nav className={`absolute top-0 w-full z-50 flex flex-row items-center justify-between px-8 py-6 max-w-7xl mx-auto left-1/2 -translate-x-1/2`}>
+        <nav className={`absolute top-0 w-full z-50 flex flex-row items-center justify-between px-8 py-6 max-w-7xl mx-auto left-1/2 -translate-x-1/2 transition-opacity duration-1000 ${isZenMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
         {/* Left Side: Logo */}
         <div className="flex-1 flex justify-start">
           <Link to="/" style={{ fontFamily: "'Lora', serif" }} className="text-3xl tracking-tight text-foreground">
@@ -261,21 +261,19 @@ function Layout() {
             </>
           )}
         </div>
-      </nav>
+        </nav>
 
-      {/* Page Content */}
-      <div className="flex-1 flex flex-col relative w-full h-full overflow-y-auto">
         <Routes>
-          <Route path="/" element={<Home isPlaying={isPlaying} togglePlay={togglePlay} />} />
-          <Route path="/mixtapes" element={<Mixtapes currentTrack={currentTrack} isPlaying={isPlaying} onPlayTrack={handlePlayTrack} />} />
-          <Route path="/journal" element={<Journal />} />
-          <Route path="/about" element={<About onAddNote={handleAddNote} />} />
+          <Route path="/" element={<Home isPlaying={isPlaying} togglePlay={togglePlay} isZenMode={isZenMode} />} />
+          <Route path="/mixtapes" element={<Mixtapes currentTrack={currentTrack} isPlaying={isPlaying} onPlayTrack={handlePlayTrack} isZenMode={isZenMode} />} />
+          <Route path="/journal" element={<Journal isZenMode={isZenMode} />} />
+          <Route path="/about" element={<About onAddNote={handleAddNote} isZenMode={isZenMode} />} />
         </Routes>
       </div>
 
       {/* Global Music Player Bar */}
       {currentTrack && isMixtapes && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[calc(100%-3rem)] max-w-3xl z-50 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl px-6 py-4 flex items-center justify-between animate-fade-rise-center shadow-2xl">
+        <div className={`fixed bottom-8 left-1/2 -translate-x-1/2 w-[calc(100%-3rem)] max-w-3xl z-50 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl px-6 py-4 flex items-center justify-between animate-fade-rise-center shadow-2xl transition-opacity duration-1000 ${isZenMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
           {/* Track Info */}
           <div className="flex items-center gap-4 w-1/3">
             <div className="w-12 h-12 rounded bg-muted/50 flex items-center justify-center overflow-hidden relative">
@@ -344,7 +342,6 @@ function Layout() {
           </div>
         </div>
       )}
-      </div> {/* End of main content fade wrapper */}
     </div>
   );
 }
