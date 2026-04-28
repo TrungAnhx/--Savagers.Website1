@@ -30,6 +30,14 @@ const allCategories = Object.entries(categoryCounts)
 
 const ARTICLES_PER_PAGE = 10;
 
+const backgroundVideos = [
+  "/backgrounds/bg1.mp4",
+  "/backgrounds/bg2.mp4",
+  "/backgrounds/bg3.mp4",
+  "/backgrounds/bg4.mp4",
+  "/backgrounds/bg5.mp4"
+];
+
 interface JournalProps {
   isZenMode?: boolean;
 }
@@ -39,6 +47,17 @@ export default function Journal({ isZenMode }: JournalProps) {
   const [activeArticle, setActiveArticle] = useState<Article | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  const [bgIndex, setBgIndex] = useState(() => Math.floor(Math.random() * backgroundVideos.length));
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setBgIndex((prev) => (prev + 1) % backgroundVideos.length);
+    }, 300000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const currentBg = backgroundVideos[bgIndex];
 
   // Scroll to top when page changes
   useEffect(() => {
@@ -85,6 +104,7 @@ export default function Journal({ isZenMode }: JournalProps) {
       
       {/* Background Video */}
       <video
+        key={currentBg}
         autoPlay
         loop
         muted
@@ -92,7 +112,7 @@ export default function Journal({ isZenMode }: JournalProps) {
         style={{ willChange: 'transform, opacity' }}
         className="fixed inset-0 w-full h-full object-cover z-[-1] opacity-60"
       >
-        <source src="/backgrounds/bg2.mp4" type="video/mp4" />
+        <source src={currentBg} type="video/mp4" />
       </video>
 
       <div className="fixed inset-0 bg-gradient-to-b from-background/90 via-background/40 to-background/90 z-[-1] pointer-events-none"></div>

@@ -1,6 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+
+const backgroundVideos = [
+  "/backgrounds/bg1.mp4",
+  "/backgrounds/bg2.mp4",
+  "/backgrounds/bg3.mp4",
+  "/backgrounds/bg4.mp4",
+  "/backgrounds/bg5.mp4"
+];
 
 interface AboutProps {
   onAddNote: (note: string) => void;
@@ -9,6 +17,16 @@ interface AboutProps {
 
 export default function About({ onAddNote, isZenMode }: AboutProps) {
   const [note, setNote] = useState('');
+  const [bgIndex, setBgIndex] = useState(() => Math.floor(Math.random() * backgroundVideos.length));
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setBgIndex((prev) => (prev + 1) % backgroundVideos.length);
+    }, 300000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const currentBg = backgroundVideos[bgIndex];
 
   return (
     <div className="relative min-h-screen w-full flex flex-col pt-32 pb-40 px-6 z-10">
@@ -18,6 +36,7 @@ export default function About({ onAddNote, isZenMode }: AboutProps) {
       
       {/* Background Video */}
       <video
+        key={currentBg}
         autoPlay
         loop
         muted
@@ -25,7 +44,7 @@ export default function About({ onAddNote, isZenMode }: AboutProps) {
         style={{ willChange: 'transform, opacity' }}
         className="fixed inset-0 w-full h-full object-cover z-[-1] opacity-60"
       >
-        <source src="/backgrounds/bg1.mp4" type="video/mp4" />
+        <source src={currentBg} type="video/mp4" />
       </video>
 
       {/* Background Gradient Overlay */}
