@@ -42,7 +42,7 @@ export default function FloatingNotes({ notes }: { notes: string[] }) {
   }, [notes]);
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-[-1] overflow-hidden mix-blend-screen">
+    <div className="fixed inset-0 pointer-events-none z-[-1] overflow-hidden">
       <AnimatePresence>
         {activeNotes.map(note => (
           <motion.div

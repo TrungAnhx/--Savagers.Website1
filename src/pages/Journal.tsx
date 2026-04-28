@@ -15,7 +15,19 @@ interface Article {
 }
 
 const articles: Article[] = articlesData as Article[];
-const allCategories = Array.from(new Set(articles.flatMap(a => a.tags || []))).sort();
+
+// Calculate category frequencies and take the top 5
+const categoryCounts = articles.flatMap(a => a.tags || []).reduce((acc, tag) => {
+  acc[tag] = (acc[tag] || 0) + 1;
+  return acc;
+}, {} as Record<string, number>);
+
+const allCategories = Object.entries(categoryCounts)
+  .sort((a, b) => b[1] - a[1])
+  .slice(0, 5)
+  .map(e => e[0])
+  .sort();
+
 const ARTICLES_PER_PAGE = 10;
 
 interface JournalProps {
@@ -27,6 +39,13 @@ export default function Journal({ isZenMode }: JournalProps) {
   const [activeArticle, setActiveArticle] = useState<Article | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  // Scroll to top when page changes
+  useEffect(() => {
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 100);
+  }, [currentPage, selectedCategory]);
 
   useEffect(() => {
     if (location.state && location.state.articleId) {
@@ -71,7 +90,7 @@ export default function Journal({ isZenMode }: JournalProps) {
         muted
         playsInline
         style={{ willChange: 'transform, opacity' }}
-        className="fixed inset-0 w-full h-full object-cover z-[-1] opacity-60 mix-blend-screen"
+        className="fixed inset-0 w-full h-full object-cover z-[-1] opacity-60"
       >
         <source src="/backgrounds/bg2.mp4" type="video/mp4" />
       </video>

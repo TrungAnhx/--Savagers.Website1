@@ -194,7 +194,7 @@ function Layout() {
   const isMixtapes = location.pathname === '/mixtapes';
 
   return (
-    <div className={`relative min-h-screen w-full overflow-hidden flex flex-col text-foreground ${isZenMode ? '' : 'bg-background'}`}>
+    <div className={`relative min-h-screen w-full flex flex-col text-foreground ${isZenMode ? '' : 'bg-background'}`}>
       {isZenMode && (
         <div 
           className="fixed inset-0 z-[100] cursor-pointer" 
@@ -217,7 +217,7 @@ function Layout() {
       <FloatingNotes notes={allNotes} />
 
       {/* Main Content Wrapper */}
-      <div className="flex-1 flex flex-col relative w-full h-full">
+      <div className="flex-1 flex flex-col relative w-full min-h-screen">
         {/* Global Navigation Bar */}
         <nav className={`absolute top-0 w-full z-50 flex flex-row items-center justify-between px-8 py-6 max-w-7xl mx-auto left-1/2 -translate-x-1/2 transition-opacity duration-1000 ${isZenMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
         {/* Left Side: Logo */}
