@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
-import { BookOpen, ChevronLeft, Calendar, Clock } from 'lucide-react';
+import { BookOpen, ChevronLeft, Calendar, Clock, ChevronRight } from 'lucide-react';
 import articlesData from '../data/articles.json';
 
 interface Article {
@@ -15,6 +15,8 @@ interface Article {
 }
 
 const articles: Article[] = articlesData as Article[];
+const allCategories = Array.from(new Set(articles.flatMap(a => a.tags || []))).sort();
+const ARTICLES_PER_PAGE = 10;
 
 interface JournalProps {
   isZenMode?: boolean;
@@ -23,6 +25,8 @@ interface JournalProps {
 export default function Journal({ isZenMode }: JournalProps) {
   const location = useLocation();
   const [activeArticle, setActiveArticle] = useState<Article | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   useEffect(() => {
     if (location.state && location.state.articleId) {
@@ -33,6 +37,26 @@ export default function Journal({ isZenMode }: JournalProps) {
       }
     }
   }, [location.state]);
+
+  const filteredArticles = useMemo(() => {
+    return selectedCategory 
+      ? articles.filter(a => a.tags && a.tags.includes(selectedCategory))
+      : articles;
+  }, [selectedCategory]);
+
+  const totalPages = Math.ceil(filteredArticles.length / ARTICLES_PER_PAGE);
+  const paginatedArticles = useMemo(() => {
+    return filteredArticles.slice(
+      (currentPage - 1) * ARTICLES_PER_PAGE,
+      currentPage * ARTICLES_PER_PAGE
+    );
+  }, [filteredArticles, currentPage]);
+
+  const handleCategoryChange = (category: string | null) => {
+    setSelectedCategory(category);
+    setCurrentPage(1); // Reset to first page
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return (
     <div className="relative min-h-screen w-full flex flex-col pt-32 pb-40 px-6 z-10">
@@ -47,12 +71,12 @@ export default function Journal({ isZenMode }: JournalProps) {
         muted
         playsInline
         style={{ willChange: 'transform, opacity' }}
-        className="fixed inset-0 w-full h-full object-cover z-[-1] opacity-30"
+        className="fixed inset-0 w-full h-full object-cover z-[-1] opacity-60 mix-blend-screen"
       >
         <source src="/backgrounds/bg2.mp4" type="video/mp4" />
       </video>
 
-      <div className="fixed inset-0 opacity-20 pointer-events-none z-[-1]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")' }}></div>
+      <div className="fixed inset-0 opacity-10 pointer-events-none z-[-1]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")' }}></div>
       <div className="fixed inset-0 bg-gradient-to-b from-background/90 via-background/40 to-background/90 z-[-1] pointer-events-none"></div>
 
       <div className={`max-w-3xl mx-auto w-full relative transition-opacity duration-1000 ${isZenMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
@@ -63,17 +87,44 @@ export default function Journal({ isZenMode }: JournalProps) {
               <h1 className="text-6xl md:text-8xl text-foreground mb-6" style={{ fontFamily: "'Lora', serif" }}>
                 The Journal.
               </h1>
-              <p className="text-muted-foreground text-lg leading-relaxed max-w-xl">
+              <p className="text-muted-foreground text-lg leading-relaxed max-w-xl mb-12">
                 Thoughts, reflections, and deep dives from txnam.net. Read in silence.
               </p>
+
+              {/* Category Filter */}
+              <div className="flex flex-wrap gap-3 mb-16">
+                <button
+                  onClick={() => handleCategoryChange(null)}
+                  className={`px-5 py-2 rounded-full text-sm transition-all duration-300 ${
+                    selectedCategory === null 
+                      ? 'bg-foreground text-background' 
+                      : 'liquid-glass text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  All
+                </button>
+                {allCategories.map(category => (
+                  <button
+                    key={category}
+                    onClick={() => handleCategoryChange(category)}
+                    className={`px-5 py-2 rounded-full text-sm transition-all duration-300 ${
+                      selectedCategory === category 
+                        ? 'bg-foreground text-background' 
+                        : 'liquid-glass text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {category}
+                  </button>
+                ))}
+              </div>
             </header>
 
             <div className="space-y-12">
-              {articles.map((article, idx) => (
+              {paginatedArticles.map((article, idx) => (
                 <article 
                   key={article.id} 
                   className={`group cursor-pointer border-b border-border/40 pb-12 animate-[fade-rise_0.6s_ease-out]`}
-                  style={{ animationDelay: `${idx * 0.15}s`, animationFillMode: 'both' }}
+                  style={{ animationDelay: `${(idx % 10) * 0.1}s`, animationFillMode: 'both' }}
                   onClick={() => {
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                     setActiveArticle(article);
@@ -101,7 +152,42 @@ export default function Journal({ isZenMode }: JournalProps) {
                   </div>
                 </article>
               ))}
+
+              {filteredArticles.length === 0 && (
+                <p className="text-muted-foreground italic text-center py-12">No articles found in this category.</p>
+              )}
             </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-4 mt-20">
+                <button
+                  onClick={() => {
+                    setCurrentPage(p => Math.max(1, p - 1));
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  disabled={currentPage === 1}
+                  className="liquid-glass w-10 h-10 rounded-full flex items-center justify-center text-foreground disabled:opacity-30 disabled:cursor-not-allowed hover:scale-105 transition-transform"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                
+                <span className="text-muted-foreground font-mono text-sm">
+                  {currentPage} / {totalPages}
+                </span>
+
+                <button
+                  onClick={() => {
+                    setCurrentPage(p => Math.min(totalPages, p + 1));
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  disabled={currentPage === totalPages}
+                  className="liquid-glass w-10 h-10 rounded-full flex items-center justify-center text-foreground disabled:opacity-30 disabled:cursor-not-allowed hover:scale-105 transition-transform"
+                >
+                  <ChevronRight size={20} />
+                </button>
+              </div>
+            )}
           </div>
         ) : (
           <article className="animate-[fade-rise_0.6s_ease-out]">

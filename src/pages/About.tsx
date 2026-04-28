@@ -23,7 +23,7 @@ export default function About({ onAddNote, isZenMode }: AboutProps) {
         muted
         playsInline
         style={{ willChange: 'transform, opacity' }}
-        className="fixed inset-0 w-full h-full object-cover z-[-1] opacity-20 mix-blend-screen"
+        className="fixed inset-0 w-full h-full object-cover z-[-1] opacity-60 mix-blend-screen"
       >
         <source src="/backgrounds/bg1.mp4" type="video/mp4" />
       </video>
