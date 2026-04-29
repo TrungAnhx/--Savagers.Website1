@@ -14,8 +14,11 @@ export default function FloatingNotes({ notes }: { notes: string[] }) {
 
   useEffect(() => {
     if (notes.length === 0) return;
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
 
     const spawnNote = () => {
+      if (document.hidden) return;
       const text = notes[Math.floor(Math.random() * notes.length)];
       const top = `${Math.random() * 70 + 15}%`;
       const duration = Math.random() * 20 + 40;
@@ -33,7 +36,7 @@ export default function FloatingNotes({ notes }: { notes: string[] }) {
     const bootstrapTimeout = window.setTimeout(spawnNote, 10000);
     timeoutIdsRef.current.push(bootstrapTimeout);
 
-    const interval = setInterval(() => {
+    const interval = window.setInterval(() => {
       if (Math.random() > 0.4) spawnNote();
     }, 15000);
 

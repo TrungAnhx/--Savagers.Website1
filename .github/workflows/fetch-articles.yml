@@ -1,11 +1,9 @@
-name: Fetch Latest Articles
+name: Fetch Spiderum Articles
 
 on:
   schedule:
-    # Chạy tự động vào lúc 00:00 UTC (khoảng 7h sáng giờ VN) mỗi ngày
     - cron: '0 0 * * *'
   workflow_dispatch:
-    # Cho phép bạn bấm nút chạy thủ công trên GitHub nếu muốn
 
 permissions:
   contents: write
@@ -25,14 +23,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run Fetch Script
-        run: node scripts/fetch.cjs
+      - name: Run Spiderum Fetch Script
+        env:
+          SPIDERUM_SOURCE_URL: https://spiderum.com/nguoi-dung/spiderum
+          SPIDERUM_MAX_ARTICLES: 18
+        run: node scripts/fetch-spiderum.cjs
 
       - name: Commit and Push changes
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action Bot"
           git add src/data/articles.json
-          # Chỉ commit nếu có thay đổi (có bài viết mới)
-          git commit -m "Auto-update: Fetched latest articles" || echo "No changes to commit"
+          git commit -m "Auto-update: Fetch Spiderum articles" || echo "No changes to commit"
           git push

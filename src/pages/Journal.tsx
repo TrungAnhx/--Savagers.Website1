@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { BookOpen, ChevronLeft, Calendar, Clock, ChevronRight } from 'lucide-react';
 import articlesData from '../data/articles.json';
 import { sanitizeHtml } from '../utils/sanitizeHtml';
+import AmbientVideo from '../components/AmbientVideo';
 
 interface Article {
   id: string;
@@ -105,20 +106,11 @@ export default function Journal({ isZenMode }: JournalProps) {
       {/* Background Styling specifically for Journal */}
       <div className="fixed inset-0 bg-background z-[-2]"></div>
       
-      {/* Background Video */}
-      <video
-        key={currentBg}
-        autoPlay
-        loop
-        muted
-        playsInline
-        style={{ willChange: 'transform, opacity' }}
+      <AmbientVideo
+        src={currentBg}
         className="fixed inset-0 w-full h-full object-cover z-[-1] opacity-60"
-      >
-        <source src={currentBg} type="video/mp4" />
-      </video>
-
-      <div className="fixed inset-0 bg-gradient-to-b from-background/90 via-background/40 to-background/90 z-[-1] pointer-events-none"></div>
+        opacityClassName="fixed inset-0 bg-gradient-to-b from-background/90 via-background/40 to-background/90 z-[-1] pointer-events-none"
+      />
 
       <div className={`max-w-3xl mx-auto w-full relative transition-opacity duration-1000 ${isZenMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
         

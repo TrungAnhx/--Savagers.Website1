@@ -1,5 +1,6 @@
 import { Play, Disc3 } from 'lucide-react';
 import { useState, useEffect, useMemo } from 'react';
+import AmbientVideo from '../components/AmbientVideo';
 
 interface Track {
   name: string;
@@ -77,19 +78,11 @@ export default function Mixtapes({ currentTrack, isPlaying, onPlayTrack }: Mixta
 
   return (
     <div className="relative min-h-screen w-full flex flex-col pt-32 pb-40 px-6">
-      <video
-        key={currentBg}
-        autoPlay
-        loop
-        muted
-        playsInline
-        style={{ willChange: 'transform, opacity' }}
+      <AmbientVideo
+        src={currentBg}
         className="fixed inset-0 w-full h-full object-cover z-0 opacity-80 pointer-events-none"
-      >
-        <source src={currentBg} type="video/mp4" />
-      </video>
-
-      <div className="fixed inset-0 bg-gradient-to-b from-background/90 via-background/40 to-background/90 z-0 pointer-events-none"></div>
+        opacityClassName="fixed inset-0 bg-gradient-to-b from-background/90 via-background/40 to-background/90 z-0 pointer-events-none"
+      />
 
       <div className="max-w-4xl mx-auto relative z-10 w-full">
         <header className="mb-20 animate-fade-rise">

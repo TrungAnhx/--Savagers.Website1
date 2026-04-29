@@ -24,6 +24,13 @@ export function sanitizeHtml(input: string): string {
         el.removeAttribute(attr.name);
       }
     });
+
+    if (tag === 'img') {
+      el.setAttribute('loading', 'lazy');
+      el.setAttribute('decoding', 'async');
+      el.removeAttribute('srcset');
+      el.removeAttribute('sizes');
+    }
   });
 
   return template.innerHTML;

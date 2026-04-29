@@ -1,13 +1,14 @@
-import { useMemo, useState } from 'react';
+import { Suspense, lazy, useMemo, useState } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { Volume2, VolumeX, Play, Pause, SkipForward, SkipBack, Disc3, Shuffle, Repeat, Repeat1, Moon } from 'lucide-react';
-import Home from './pages/Home';
-import Mixtapes from './pages/Mixtapes';
-import Journal from './pages/Journal';
-import About from './pages/About';
 import FloatingNotes from './components/FloatingNotes';
 import notesData from './data/notes.json';
 import { useAudioPlayer } from './hooks/useAudioPlayer';
+
+const Home = lazy(() => import('./pages/Home'));
+const Mixtapes = lazy(() => import('./pages/Mixtapes'));
+const Journal = lazy(() => import('./pages/Journal'));
+const About = lazy(() => import('./pages/About'));
 
 function Layout() {
   const [isZenMode, setIsZenMode] = useState(false);
@@ -50,6 +51,7 @@ function Layout() {
 
   const isHome = location.pathname === '/';
   const isMixtapes = location.pathname === '/mixtapes';
+  const routeFallback = <div className="min-h-screen w-full" />;
 
   return (
     <div className={`relative min-h-screen w-full flex flex-col text-foreground ${isZenMode ? '' : 'bg-background'}`}>
@@ -103,12 +105,14 @@ function Layout() {
           </div>
         </nav>
 
-        <Routes>
-          <Route path="/" element={<Home isPlaying={isPlaying} togglePlay={togglePlay} isZenMode={isZenMode} />} />
-          <Route path="/mixtapes" element={<Mixtapes currentTrack={currentTrack} isPlaying={isPlaying} onPlayTrack={handlePlayTrack} isZenMode={isZenMode} />} />
-          <Route path="/journal" element={<Journal isZenMode={isZenMode} />} />
-          <Route path="/about" element={<About onAddNote={handleAddNote} isZenMode={isZenMode} />} />
-        </Routes>
+        <Suspense fallback={routeFallback}>
+          <Routes>
+            <Route path="/" element={<Home isPlaying={isPlaying} togglePlay={togglePlay} isZenMode={isZenMode} />} />
+            <Route path="/mixtapes" element={<Mixtapes currentTrack={currentTrack} isPlaying={isPlaying} onPlayTrack={handlePlayTrack} isZenMode={isZenMode} />} />
+            <Route path="/journal" element={<Journal isZenMode={isZenMode} />} />
+            <Route path="/about" element={<About onAddNote={handleAddNote} isZenMode={isZenMode} />} />
+          </Routes>
+        </Suspense>
       </div>
 
       {currentTrack && isMixtapes && (

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import AmbientVideo from '../components/AmbientVideo';
 
 const backgroundVideos = [
   '/backgrounds/bg1.mp4',
@@ -32,19 +33,11 @@ export default function About({ onAddNote, isZenMode }: AboutProps) {
     <div className="relative min-h-screen w-full flex flex-col pt-32 pb-40 px-6 z-10">
       <div className="fixed inset-0 bg-background z-[-2]"></div>
 
-      <video
-        key={currentBg}
-        autoPlay
-        loop
-        muted
-        playsInline
-        style={{ willChange: 'transform, opacity' }}
+      <AmbientVideo
+        src={currentBg}
         className="fixed inset-0 w-full h-full object-cover z-[-1] opacity-60"
-      >
-        <source src={currentBg} type="video/mp4" />
-      </video>
-
-      <div className="fixed inset-0 bg-gradient-to-b from-background/90 via-background/40 to-background/90 z-[-1] pointer-events-none"></div>
+        opacityClassName="fixed inset-0 bg-gradient-to-b from-background/90 via-background/40 to-background/90 z-[-1] pointer-events-none"
+      />
 
       <div className={`max-w-4xl mx-auto w-full relative transition-opacity duration-1000 ${isZenMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
         <div className="animate-[fade-rise_0.6s_ease-out]">
