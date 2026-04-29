@@ -4,6 +4,56 @@ const cheerio = require('cheerio');
 const SOURCE_URL = process.env.SPIDERUM_SOURCE_URL || 'https://spiderum.com/nguoi-dung/spiderum';
 const OUTPUT_PATH = './src/data/articles.json';
 const MAX_ARTICLES = Number.parseInt(process.env.SPIDERUM_MAX_ARTICLES || '18', 10);
+const PREFERRED_KEYWORDS = [
+  'ai',
+  'công nghệ',
+  'cong nghe',
+  'khoa học',
+  'khoa hoc',
+  'lập trình',
+  'lap trinh',
+  'it',
+  'cuộc sống',
+  'cuoc song',
+  'quan điểm',
+  'quan diem',
+  'tranh luận',
+  'tranh luan',
+  'nghề nghiệp',
+  'nghe nghiep',
+  'career',
+  'life',
+  'life style',
+  'lifestyle',
+  'urban life',
+  'minimalism',
+  'phát triển bản thân',
+  'phat trien ban than',
+  'người trẻ',
+  'nguoi tre'
+];
+const EXCLUDED_KEYWORDS = [
+  'tài chính',
+  'tai chinh',
+  'sách',
+  'sach',
+  'sự kiện',
+  'su kien',
+  'hackathon',
+  'cuộc thi',
+  'cuoc thi',
+  'đồng hành',
+  'dong hanh',
+  'homentor',
+  'tiền không tệ',
+  'tien khong te',
+  'mở bán sách',
+  'mo ban sach',
+  'tuyển dụng',
+  'tuyen dung',
+  '100 triệu',
+  '100 trieu'
+];
 
 function normalizeWhitespace(value) {
   return value.replace(/\s+/g, ' ').trim();
@@ -11,6 +61,13 @@ function normalizeWhitespace(value) {
 
 function slugFromUrl(url) {
   return url.split('/').filter(Boolean).pop() || url;
+}
+
+function normalizeKeyword(value) {
+  return value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
 }
 
 function parseReadTime(text) {
@@ -172,6 +229,14 @@ function extractTags(html) {
   return tags.length > 0 ? tags : ['Spiderum'];
 }
 
+function isPreferredArticle(article) {
+  const haystack = normalizeKeyword([article.title, article.excerpt, ...(article.tags || [])].join(' '));
+  if (EXCLUDED_KEYWORDS.some((keyword) => haystack.includes(normalizeKeyword(keyword)))) {
+    return false;
+  }
+  return PREFERRED_KEYWORDS.some((keyword) => haystack.includes(normalizeKeyword(keyword)));
+}
+
 async function main() {
   const listHtml = await fetchHtml(SOURCE_URL);
   const entries = extractListEntries(listHtml);
@@ -217,9 +282,11 @@ async function main() {
     return typeof article.link === 'string' && !article.link.includes('spiderum.com');
   });
 
-  const mergedArticles = [...articles, ...preservedArticles];
+  const selectedArticles = articles.filter(isPreferredArticle);
+  const finalSpiderumArticles = selectedArticles.length > 0 ? selectedArticles : articles;
+  const mergedArticles = [...finalSpiderumArticles, ...preservedArticles];
   fs.writeFileSync(OUTPUT_PATH, JSON.stringify(mergedArticles, null, 2) + '\n', 'utf8');
-  console.log(`Saved ${articles.length} Spiderum articles and preserved ${preservedArticles.length} existing non-Spiderum articles.`);
+  console.log(`Saved ${finalSpiderumArticles.length} Spiderum articles and preserved ${preservedArticles.length} existing non-Spiderum articles.`);
 }
 
 main().catch((error) => {

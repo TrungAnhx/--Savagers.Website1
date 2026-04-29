@@ -1,6 +1,6 @@
 import { Suspense, lazy, useMemo, useState } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { Volume2, VolumeX, Play, Pause, SkipForward, SkipBack, Disc3, Shuffle, Repeat, Repeat1, Moon } from 'lucide-react';
+import { Volume2, VolumeX, Play, Pause, SkipForward, SkipBack, Disc3, Shuffle, Repeat, Repeat1, Quote } from 'lucide-react';
 import FloatingNotes from './components/FloatingNotes';
 import notesData from './data/notes.json';
 import { useAudioPlayer } from './hooks/useAudioPlayer';
@@ -11,7 +11,16 @@ const Journal = lazy(() => import('./pages/Journal'));
 const About = lazy(() => import('./pages/About'));
 
 function Layout() {
-  const [isZenMode, setIsZenMode] = useState(false);
+  const isZenMode = false;
+  const [showWhispers, setShowWhispers] = useState(() => {
+    const saved = localStorage.getItem('savagers_showWhispers');
+    if (saved === null) return true;
+    try {
+      return JSON.parse(saved);
+    } catch {
+      return true;
+    }
+  });
   const [customNotes, setCustomNotes] = useState<string[]>(() => {
     const saved = localStorage.getItem('savagers_notes');
     try {
@@ -53,12 +62,14 @@ function Layout() {
   const isMixtapes = location.pathname === '/mixtapes';
   const routeFallback = <div className="min-h-screen w-full" />;
 
+  const toggleWhispers = () => {
+    const nextValue = !showWhispers;
+    setShowWhispers(nextValue);
+    localStorage.setItem('savagers_showWhispers', JSON.stringify(nextValue));
+  };
+
   return (
     <div className={`relative min-h-screen w-full flex flex-col text-foreground ${isZenMode ? '' : 'bg-background'}`}>
-      {isZenMode && (
-        <div className="fixed inset-0 z-[100] cursor-pointer" onClick={() => setIsZenMode(false)} title="Click anywhere to exit Zen Mode"></div>
-      )}
-
       <audio
         ref={audioRef}
         loop={!currentTrack}
@@ -69,7 +80,7 @@ function Layout() {
         src={currentTrack?.url || '/musics/default-lofi.mp3'}
       />
 
-      <FloatingNotes notes={allNotes} />
+      {showWhispers ? <FloatingNotes notes={allNotes} /> : null}
 
       <div className="flex-1 flex flex-col relative w-full min-h-screen">
         <nav className={`absolute top-0 w-full z-50 flex flex-row items-center justify-between px-8 py-6 max-w-7xl mx-auto left-1/2 -translate-x-1/2 transition-opacity duration-1000 ${isZenMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
@@ -87,8 +98,13 @@ function Layout() {
           </ul>
 
           <div className="flex-1 flex items-center justify-end gap-4">
-            <button onClick={() => setIsZenMode(true)} className="text-foreground hover:text-muted-foreground transition-colors cursor-pointer flex items-center justify-center" title="Zen Mode">
-              <Moon size={20} />
+            <button
+              onClick={toggleWhispers}
+              className={`transition-colors cursor-pointer flex items-center justify-center ${showWhispers ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+              title={showWhispers ? 'Hide whispers' : 'Show whispers'}
+              aria-label={showWhispers ? 'Hide whispers' : 'Show whispers'}
+            >
+              <Quote size={20} />
             </button>
 
             {isHome && (
@@ -139,7 +155,9 @@ function Layout() {
               </button>
 
               <button onClick={togglePlay} className="w-10 h-10 rounded-full bg-foreground text-background flex items-center justify-center hover:scale-105 transition-transform cursor-pointer">
-                {isPlaying ? <Pause fill="currentColor" size={18} /> : <Play fill="currentColor" size={18} className="ml-1" />}
+                <span className="flex h-[18px] w-[18px] items-center justify-center">
+                  {isPlaying ? <Pause fill="currentColor" size={18} /> : <Play fill="currentColor" size={18} className="translate-x-px" />}
+                </span>
               </button>
 
               <button onClick={playNext} className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
