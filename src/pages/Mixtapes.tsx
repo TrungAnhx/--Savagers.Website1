@@ -16,50 +16,48 @@ interface MixtapesProps {
 }
 
 const backgroundVideos = [
-  "/backgrounds/bg1.mp4",
-  "/backgrounds/bg2.mp4",
-  "/backgrounds/bg3.mp4",
-  "/backgrounds/bg4.mp4",
-  "/backgrounds/bg5.mp4"
+  '/backgrounds/bg1.mp4',
+  '/backgrounds/bg2.mp4',
+  '/backgrounds/bg3.mp4',
+  '/backgrounds/bg4.mp4',
+  '/backgrounds/bg5.mp4'
 ];
 
 const rawCategories = [
   {
-    title: "Global Covers & Hits",
-    description: "Timeless vocals and acoustic covers for deep focus.",
+    title: 'Global Covers & Hits',
+    description: 'Timeless vocals and acoustic covers for deep focus.',
     tracks: [
-      { name: "I'm Not The Only One", duration: "3:59", artist: "Sam Smith", url: "/musics/track1.mp3" },
-      { name: "Patience", duration: "3:22", artist: "Take That", url: "/musics/track2.mp3" },
-      { name: "Modern Loneliness", duration: "4:12", artist: "Lauv (Alec Chambers Cover)", url: "/musics/track5.mp3" },
-      { name: "Be Happy", duration: "3:18", artist: "Dixie D'Amelio (Alec Chambers Cover)", url: "/musics/track6.mp3" },
+      { name: "I'm Not The Only One", duration: '3:59', artist: 'Sam Smith', url: '/musics/track1.mp3' },
+      { name: 'Patience', duration: '3:22', artist: 'Take That', url: '/musics/track2.mp3' },
+      { name: 'Modern Loneliness', duration: '4:12', artist: 'Lauv (Alec Chambers Cover)', url: '/musics/track5.mp3' },
+      { name: 'Be Happy', duration: '3:18', artist: "Dixie D'Amelio (Alec Chambers Cover)", url: '/musics/track6.mp3' },
     ]
   },
   {
-    title: "Vietnamese Vibes",
-    description: "Local lo-fi and R&B beats to chill out.",
+    title: 'Vietnamese Vibes',
+    description: 'Local lo-fi and R&B beats to chill out.',
     tracks: [
-      { name: "Hello Em Có Khỏe Không", duration: "3:45", artist: "Dfoxie37 & Myhoa & Tuann", url: "/musics/track3.mp3" },
-      { name: "Think About U", duration: "3:10", artist: "Kay Châu Anh", url: "/musics/track4.mp3" },
+      { name: 'Hello Em Có Khỏe Không', duration: '3:45', artist: 'Dfoxie37 & Myhoa & Tuann', url: '/musics/track3.mp3' },
+      { name: 'Think About U', duration: '3:10', artist: 'Kay Châu Anh', url: '/musics/track4.mp3' },
     ]
   },
   {
-    title: "Piano Covers",
-    description: "Soothing piano instrumentals for absolute silence.",
+    title: 'Piano Covers',
+    description: 'Soothing piano instrumentals for absolute silence.',
     tracks: [
-      { name: "Nơi Này Có Anh", duration: "4:20", artist: "Sơn Tùng M-TP", url: "/musics/track7.mp3" },
-      { name: "Modern Loneliness", duration: "3:55", artist: "Lauv (Keudae Cover)", url: "/musics/track8.mp3" },
-      { name: "Âm Thầm Bên Em", duration: "4:50", artist: "Sơn Tùng M-TP", url: "/musics/track9.mp3" },
-      { name: "Xe Đạp", duration: "4:15", artist: "Thùy Chi ft. M4U", url: "/musics/track10.mp3" },
+      { name: 'Nơi Này Có Anh', duration: '4:20', artist: 'Sơn Tùng M-TP', url: '/musics/track7.mp3' },
+      { name: 'Modern Loneliness', duration: '3:55', artist: 'Lauv (Keudae Cover)', url: '/musics/track8.mp3' },
+      { name: 'Âm Thầm Bên Em', duration: '4:50', artist: 'Sơn Tùng M-TP', url: '/musics/track9.mp3' },
+      { name: 'Xe Đạp', duration: '4:15', artist: 'Thùy Chi ft. M4U', url: '/musics/track10.mp3' },
     ]
   }
 ];
 
 export default function Mixtapes({ currentTrack, isPlaying, onPlayTrack }: MixtapesProps) {
-  // Chọn ngẫu nhiên 1 video khi mới vào
   const [bgIndex, setBgIndex] = useState(() => Math.floor(Math.random() * backgroundVideos.length));
 
   useEffect(() => {
-    // Chuyển video mỗi 5 phút (300000 ms)
     const interval = setInterval(() => {
       setBgIndex((prev) => (prev + 1) % backgroundVideos.length);
     }, 300000);
@@ -68,19 +66,17 @@ export default function Mixtapes({ currentTrack, isPlaying, onPlayTrack }: Mixta
 
   const currentBg = backgroundVideos[bgIndex];
 
-  // Sort tracks alphabetically within each category and create a flattened playlist
   const { sortedCategories, fullPlaylist } = useMemo(() => {
-    const sorted = rawCategories.map(cat => ({
+    const sorted = rawCategories.map((cat) => ({
       ...cat,
       tracks: [...cat.tracks].sort((a, b) => a.name.localeCompare(b.name))
     }));
-    const playlist = sorted.flatMap(cat => cat.tracks);
+    const playlist = sorted.flatMap((cat) => cat.tracks);
     return { sortedCategories: sorted, fullPlaylist: playlist };
   }, []);
 
   return (
     <div className="relative min-h-screen w-full flex flex-col pt-32 pb-40 px-6">
-      {/* Background Video */}
       <video
         key={currentBg}
         autoPlay
@@ -93,7 +89,6 @@ export default function Mixtapes({ currentTrack, isPlaying, onPlayTrack }: Mixta
         <source src={currentBg} type="video/mp4" />
       </video>
 
-      {/* Gentle gradient to ensure text readability without hiding the video */}
       <div className="fixed inset-0 bg-gradient-to-b from-background/90 via-background/40 to-background/90 z-0 pointer-events-none"></div>
 
       <div className="max-w-4xl mx-auto relative z-10 w-full">
@@ -121,7 +116,7 @@ export default function Mixtapes({ currentTrack, isPlaying, onPlayTrack }: Mixta
                 {category.tracks.map((track, trackIdx) => {
                   const isCurrentTrack = currentTrack?.name === track.name;
                   return (
-                    <div 
+                    <div
                       key={trackIdx}
                       onClick={() => onPlayTrack(track, fullPlaylist)}
                       className={`group flex items-center justify-between p-4 rounded-lg transition-colors cursor-pointer ${isCurrentTrack ? 'bg-white/10' : 'hover:bg-white/5'}`}
@@ -138,9 +133,9 @@ export default function Mixtapes({ currentTrack, isPlaying, onPlayTrack }: Mixta
                             {trackIdx + 1}
                           </span>
                         )}
-                        
+
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isCurrentTrack ? 'bg-white/20' : 'bg-white/5 group-hover:bg-white/10'}`}>
-                          <Play size={14} className={`ml-0.5 ${isCurrentTrack ? 'text-foreground opacity-100' : 'text-foreground opacity-50 group-hover:opacity-100'}`} fill={isCurrentTrack ? "currentColor" : "none"} />
+                          <Play size={14} className={`ml-0.5 ${isCurrentTrack ? 'text-foreground opacity-100' : 'text-foreground opacity-50 group-hover:opacity-100'}`} fill={isCurrentTrack ? 'currentColor' : 'none'} />
                         </div>
                         <div>
                           <h3 className={`text-base font-medium ${isCurrentTrack ? 'text-foreground' : 'text-muted-foreground group-hover:text-foreground'}`}>{track.name}</h3>

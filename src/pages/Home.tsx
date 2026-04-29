@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Calendar, Clock, ArrowRight } from 'lucide-react';
 import articlesData from '../data/articles.json';
@@ -20,14 +19,8 @@ interface HomeProps {
 }
 
 export default function Home({ isPlaying, togglePlay, isZenMode }: HomeProps) {
-  const [featuredArticles, setFeaturedArticles] = useState<Article[]>([]);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    // Pick 3 random articles for the homepage
-    const shuffled = [...(articlesData as Article[])].sort(() => 0.5 - Math.random());
-    setFeaturedArticles(shuffled.slice(0, 3));
-  }, []);
+  const featuredArticles = (articlesData as Article[]).slice(0, 3);
 
   return (
     <div className="relative min-h-screen w-full flex flex-col flex-1">

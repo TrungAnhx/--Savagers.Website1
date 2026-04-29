@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { BookOpen, ChevronLeft, Calendar, Clock, ChevronRight } from 'lucide-react';
 import articlesData from '../data/articles.json';
+import { sanitizeHtml } from '../utils/sanitizeHtml';
 
 interface Article {
   id: string;
@@ -44,7 +45,9 @@ interface JournalProps {
 
 export default function Journal({ isZenMode }: JournalProps) {
   const location = useLocation();
-  const [activeArticle, setActiveArticle] = useState<Article | null>(null);
+  const navigate = useNavigate();
+  const [activeArticleId, setActiveArticleId] = useState<string | null>(null);
+  const [ignoreLocationState, setIgnoreLocationState] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
@@ -66,15 +69,15 @@ export default function Journal({ isZenMode }: JournalProps) {
     }, 100);
   }, [currentPage, selectedCategory]);
 
-  useEffect(() => {
-    if (location.state && location.state.articleId) {
-      const foundArticle = articles.find(a => a.id === location.state.articleId);
-      if (foundArticle) {
-        setActiveArticle(foundArticle);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    }
-  }, [location.state]);
+  const locationArticleId = !ignoreLocationState && location.state && typeof location.state === 'object' && 'articleId' in location.state
+    ? (location.state as { articleId?: string }).articleId ?? null
+    : null;
+  const resolvedArticleId = activeArticleId ?? locationArticleId;
+  const activeArticle = resolvedArticleId ? (articles.find((a) => a.id === resolvedArticleId) ?? null) : null;
+  const sanitizedContent = useMemo(
+    () => (activeArticle ? sanitizeHtml(activeArticle.content) : ''),
+    [activeArticle]
+  );
 
   const filteredArticles = useMemo(() => {
     return selectedCategory 
@@ -165,7 +168,8 @@ export default function Journal({ isZenMode }: JournalProps) {
                   style={{ animationDelay: `${(idx % 10) * 0.1}s`, animationFillMode: 'both' }}
                   onClick={() => {
                     window.scrollTo({ top: 0, behavior: 'smooth' });
-                    setActiveArticle(article);
+                    setActiveArticleId(article.id);
+                    setIgnoreLocationState(true);
                   }}
                 >
                   <div className="flex items-center gap-4 text-xs text-muted-foreground font-mono mb-4">
@@ -230,7 +234,10 @@ export default function Journal({ isZenMode }: JournalProps) {
         ) : (
           <article className="animate-[fade-rise_0.6s_ease-out]">
             <button 
-              onClick={() => setActiveArticle(null)}
+              onClick={() => {
+                setActiveArticleId(null);
+                setIgnoreLocationState(true);
+              }}
               className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-12 group"
             >
               <ChevronLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
@@ -259,7 +266,7 @@ export default function Journal({ isZenMode }: JournalProps) {
               prose-a:text-foreground prose-a:underline prose-a:underline-offset-4 hover:prose-a:text-primary
               prose-img:rounded-xl prose-img:shadow-2xl prose-img:mx-auto prose-img:my-12
               selection:bg-foreground selection:text-background"
-              dangerouslySetInnerHTML={{ __html: activeArticle.content }}
+              dangerouslySetInnerHTML={{ __html: sanitizedContent }}
             />
             
             <div className="mt-20 pt-8 border-t border-border/40 flex justify-between items-center">
@@ -267,7 +274,9 @@ export default function Journal({ isZenMode }: JournalProps) {
                <button 
                   onClick={() => {
                     window.scrollTo({ top: 0, behavior: 'smooth' });
-                    setActiveArticle(null);
+                    setActiveArticleId(null);
+                    setIgnoreLocationState(true);
+                    navigate(location.pathname, { replace: true, state: null });
                   }}
                   className="liquid-glass rounded-full px-6 py-2 text-sm text-foreground hover:scale-[1.03] cursor-pointer"
                 >

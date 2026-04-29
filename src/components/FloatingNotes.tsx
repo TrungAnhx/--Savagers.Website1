@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Note {
@@ -10,41 +10,44 @@ interface Note {
 
 export default function FloatingNotes({ notes }: { notes: string[] }) {
   const [activeNotes, setActiveNotes] = useState<Note[]>([]);
+  const timeoutIdsRef = useRef<number[]>([]);
 
   useEffect(() => {
     if (notes.length === 0) return;
 
     const spawnNote = () => {
       const text = notes[Math.floor(Math.random() * notes.length)];
-      const top = `${Math.random() * 70 + 15}%`; // Tránh dính quá sát 2 mép (15% - 85%)
-      const duration = Math.random() * 20 + 40; // Trôi siêu chậm (40-60 giây)
+      const top = `${Math.random() * 70 + 15}%`;
+      const duration = Math.random() * 20 + 40;
       const newNote = { id: Date.now() + Math.random(), text, top, duration };
-      
-      setActiveNotes(prev => [...prev, newNote]);
 
-      setTimeout(() => {
-        setActiveNotes(prev => prev.filter(n => n.id !== newNote.id));
+      setActiveNotes((prev) => [...prev, newNote]);
+
+      const removeTimeout = window.setTimeout(() => {
+        setActiveNotes((prev) => prev.filter((n) => n.id !== newNote.id));
       }, duration * 1000);
+      timeoutIdsRef.current.push(removeTimeout);
     };
 
-    // Khởi tạo vài dòng chữ bay ngay lúc đầu
     spawnNote();
-    setTimeout(spawnNote, 10000);
-    
-    // Liên tục sinh ra dòng tâm sự mới
+    const bootstrapTimeout = window.setTimeout(spawnNote, 10000);
+    timeoutIdsRef.current.push(bootstrapTimeout);
+
     const interval = setInterval(() => {
-      if (Math.random() > 0.4) {
-        spawnNote();
-      }
+      if (Math.random() > 0.4) spawnNote();
     }, 15000);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      timeoutIdsRef.current.forEach((id) => clearTimeout(id));
+      timeoutIdsRef.current = [];
+    };
   }, [notes]);
 
   return (
     <div className="fixed inset-0 pointer-events-none z-[-1] overflow-hidden">
       <AnimatePresence>
-        {activeNotes.map(note => (
+        {activeNotes.map((note) => (
           <motion.div
             key={note.id}
             initial={{ left: '100vw', opacity: 0 }}
