@@ -114,11 +114,13 @@ export default function Home({ isPlaying, togglePlay, isZenMode }: HomeProps) {
 
         {!isLoading && articles.length > 0 && (
           <div className="mt-16 liquid-glass rounded-full px-5 py-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-white/78 w-fit max-w-full">
-            <span className="whitespace-nowrap">{articles.length} articles live in the archive</span>
+            <span className="whitespace-nowrap">
+              Developed by Savagers<sup className="ml-0.5 text-[10px] leading-none">®</sup>
+            </span>
             <span className="hidden md:inline text-white/35">/</span>
-            <span className="whitespace-nowrap">Runtime-loaded metadata</span>
+            <span className="whitespace-nowrap">Built for quiet focus</span>
             <span className="hidden md:inline text-white/35">/</span>
-            <span className="whitespace-nowrap">Archive capped at 100 posts</span>
+            <span className="whitespace-nowrap">Curated daily</span>
           </div>
         )}
         </div>
