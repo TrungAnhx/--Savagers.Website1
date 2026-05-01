@@ -19,7 +19,7 @@ export default function Home({ isPlaying, togglePlay, isZenMode }: HomeProps) {
     <div className="relative min-h-screen w-full flex flex-col flex-1">
       {/* Fixed Video Background so it stays while scrolling */}
       <AmbientVideo
-        src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260314_131748_f2ca2a28-fed7-44c8-b9a9-bd9acdd5ec31.mp4"
+        src="/backgrounds/home_bg_4k.mp4"
         className="fixed inset-0 w-full h-full object-cover z-0 pointer-events-none"
       />
 
@@ -51,7 +51,9 @@ export default function Home({ isPlaying, togglePlay, isZenMode }: HomeProps) {
       </section>
 
       {/* Featured Journal Section */}
-      <section id="featured-journal" className="relative z-10 w-full max-w-7xl mx-auto px-6 py-32">
+      <section id="featured-journal" className="relative z-10 w-full overflow-hidden px-6 py-32">
+        <div className="absolute inset-0 bg-background/72 backdrop-blur-[2px]" />
+        <div className="relative max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
           <div>
             <h2 className="text-4xl md:text-6xl text-foreground mb-4" style={{ fontFamily: "'Instrument Serif', serif" }}>
@@ -70,14 +72,14 @@ export default function Home({ isPlaying, togglePlay, isZenMode }: HomeProps) {
           {isLoading && Array.from({ length: 3 }).map((_, idx) => (
             <div
               key={idx}
-              className="bg-white/5 border border-border/40 rounded-2xl p-8 min-h-[320px] animate-pulse"
+              className="liquid-glass rounded-2xl p-8 min-h-[320px] animate-pulse"
             />
           ))}
 
           {!isLoading && featuredArticles.map((entry, idx) => (
             <article 
               key={entry.article.id} 
-              className="group cursor-pointer bg-white/5 border border-border/40 rounded-2xl p-8 hover:bg-white/10 transition-colors flex flex-col animate-[fade-rise_0.6s_ease-out]"
+              className="group cursor-pointer liquid-glass liquid-glass-interactive rounded-2xl p-8 flex flex-col animate-[fade-rise_0.6s_ease-out]"
               style={{ animationDelay: `${idx * 0.15}s`, animationFillMode: 'both' }}
               onClick={() => {
                 navigate('/journal', { state: { articleId: entry.article.id } });
@@ -113,12 +115,13 @@ export default function Home({ isPlaying, togglePlay, isZenMode }: HomeProps) {
         {!isLoading && articles.length > 0 && (
           <div className="mt-16 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
             <span>{articles.length} articles live in the archive</span>
-            <span className="hidden md:inline text-border">•</span>
+            <span className="hidden md:inline text-border">/</span>
             <span>Runtime-loaded to keep the app lighter</span>
-            <span className="hidden md:inline text-border">•</span>
+            <span className="hidden md:inline text-border">/</span>
             <span>Archive capped at 100 posts</span>
           </div>
         )}
+        </div>
       </section>
       </div>
     </div>

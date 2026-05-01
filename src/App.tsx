@@ -83,29 +83,29 @@ function Layout() {
       {showWhispers ? <FloatingNotes notes={allNotes} /> : null}
 
       <div className="flex-1 flex flex-col relative w-full min-h-screen">
-        <nav className={`absolute top-4 w-[calc(100%-2rem)] z-50 flex flex-row items-center justify-between px-6 md:px-8 py-4 max-w-7xl mx-auto left-1/2 -translate-x-1/2 liquid-glass rounded-full transition-opacity duration-1000 ${isZenMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-          <div className="flex-1 flex justify-start">
+        <nav className={`fixed top-4 left-4 right-4 z-50 flex min-h-[72px] flex-row items-center justify-between gap-6 px-7 py-4 md:px-10 max-w-[88rem] mx-auto liquid-glass rounded-full transition-opacity duration-1000 ${isZenMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+          <div className="flex min-w-[120px] md:min-w-[150px] justify-start">
             <Link to="/" className="text-3xl tracking-tight text-foreground font-display">
               Savagers.
             </Link>
           </div>
 
-          <ul className="hidden md:flex items-center justify-center gap-8 flex-none">
+          <ul className="hidden md:flex items-center justify-center gap-9 flex-1">
             <li><Link to="/" className={`text-sm transition-colors hover:text-foreground ${isHome ? 'text-foreground' : 'text-muted-foreground'}`}>Home</Link></li>
             <li><Link to="/mixtapes" className={`text-sm transition-colors hover:text-foreground ${isMixtapes ? 'text-foreground' : 'text-muted-foreground'}`}>Frequencies</Link></li>
             <li><Link to="/journal" className={`text-sm transition-colors hover:text-foreground ${location.pathname === '/journal' ? 'text-foreground' : 'text-muted-foreground'}`}>Chronicles</Link></li>
             <li><Link to="/about" className={`text-sm transition-colors hover:text-foreground ${location.pathname === '/about' ? 'text-foreground' : 'text-muted-foreground'}`}>About</Link></li>
           </ul>
 
-          <div className="flex-1 flex items-center justify-end gap-4">
+          <div className="flex min-w-0 md:min-w-[260px] items-center justify-end gap-3 md:gap-4">
             <button
               onClick={toggleWhispers}
               className={`liquid-glass liquid-glass-interactive rounded-full px-3 py-2 text-sm cursor-pointer flex items-center justify-center gap-2 ${showWhispers ? 'liquid-glass-active text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-              title={showWhispers ? 'Hide floating notes' : 'Show floating notes'}
-              aria-label={showWhispers ? 'Hide floating notes' : 'Show floating notes'}
+              title={showWhispers ? 'Hide ambient notes' : 'Show ambient notes'}
+              aria-label={showWhispers ? 'Hide ambient notes' : 'Show ambient notes'}
             >
               <MessageCircle size={17} />
-              <span className="hidden md:inline">Notes</span>
+              <span className="hidden md:inline">{showWhispers ? 'Notes On' : 'Notes Off'}</span>
             </button>
 
             {isHome && (

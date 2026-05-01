@@ -48,7 +48,7 @@ export default function FloatingNotes({ notes }: { notes: string[] }) {
   }, [notes]);
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-[-1] overflow-hidden">
+    <div className="fixed inset-0 pointer-events-none z-[5] overflow-hidden">
       <AnimatePresence>
         {activeNotes.map((note) => (
           <motion.div
@@ -57,7 +57,7 @@ export default function FloatingNotes({ notes }: { notes: string[] }) {
             animate={{ left: '-50vw', opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: note.duration, ease: 'linear' }}
-            className="absolute whitespace-nowrap text-white/30 font-serif text-xl tracking-wide drop-shadow-lg"
+            className="absolute whitespace-nowrap text-white/45 font-serif text-xl tracking-wide drop-shadow-lg"
             style={{ top: note.top, fontFamily: "'Instrument Serif', serif" }}
           >
             "{note.text}"
