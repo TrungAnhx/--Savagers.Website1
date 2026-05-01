@@ -83,14 +83,14 @@ function Layout() {
       {showWhispers ? <FloatingNotes notes={allNotes} /> : null}
 
       <div className="flex-1 flex flex-col relative w-full min-h-screen">
-        <nav className={`fixed top-4 left-4 right-4 z-50 grid min-h-[72px] grid-cols-[auto_1fr_auto] items-center gap-4 px-7 py-4 md:px-10 max-w-[88rem] mx-auto liquid-glass rounded-full transition-opacity duration-1000 ${isZenMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+        <nav className={`fixed top-4 left-4 right-4 z-50 grid min-h-[72px] grid-cols-[auto_1fr_auto] items-center gap-4 px-7 py-4 md:px-10 ${isHome ? 'max-w-[88rem]' : 'max-w-[72rem]'} mx-auto liquid-glass rounded-full transition-all duration-500 ${isZenMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
           <div className="flex min-w-[120px] md:min-w-[150px] justify-start">
             <Link to="/" className="text-3xl tracking-tight text-foreground font-display">
               Savagers.
             </Link>
           </div>
 
-          <div className="hidden md:flex items-center justify-center gap-8 lg:gap-9">
+          <div className={`hidden md:flex items-center justify-center ${isHome ? 'gap-8 lg:gap-9' : 'gap-7 lg:gap-8'}`}>
             <Link to="/" className={`text-sm transition-colors hover:text-foreground ${isHome ? 'text-foreground' : 'text-muted-foreground'}`}>Home</Link>
             <Link to="/mixtapes" className={`text-sm transition-colors hover:text-foreground ${isMixtapes ? 'text-foreground' : 'text-muted-foreground'}`}>Frequencies</Link>
             <Link to="/journal" className={`text-sm transition-colors hover:text-foreground ${location.pathname === '/journal' ? 'text-foreground' : 'text-muted-foreground'}`}>Chronicles</Link>
@@ -106,7 +106,7 @@ function Layout() {
             </button>
           </div>
 
-          <div className="flex min-w-0 md:min-w-[150px] items-center justify-end gap-2">
+          <div className={`flex min-w-0 items-center justify-end gap-2 ${isHome ? 'md:min-w-[150px]' : 'md:min-w-0'}`}>
             <div className="md:hidden">
               <button
                 onClick={toggleWhispers}
@@ -127,9 +127,7 @@ function Layout() {
                 {isPlaying ? <Volume2 size={20} /> : <VolumeX size={20} />}
               </button>
               </>
-            ) : (
-              <div className="hidden md:block w-[132px]" aria-hidden="true" />
-            )}
+            ) : null}
           </div>
         </nav>
 
