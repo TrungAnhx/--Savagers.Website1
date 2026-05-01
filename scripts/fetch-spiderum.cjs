@@ -47,10 +47,23 @@ const PREFERRED_PATTERNS = [
   /\bdeveloper\b/,
   /\bprogramming\b/,
   /\bsoftware\b/,
+  /\bcoding\b/,
+  /\bbackend\b/,
+  /\bfront end\b/,
+  /\bfrontend\b/,
+  /\bfullstack\b/,
+  /\bdevops\b/,
+  /\bcloud\b/,
+  /\bcybersecurity\b/,
+  /\bsecurity\b/,
+  /\bdata\b/,
   /\bweb3\b/,
   /\bdu lieu\b/,
   /\bmachine learning\b/,
   /\bdeep learning\b/,
+  /\bllm\b/,
+  /\bchatgpt\b/,
+  /\bgame\b/,
   /\bcuoc song\b/,
   /\bquan diem\b/,
   /\btranh luan\b/,
@@ -84,6 +97,43 @@ const EXCLUDED_KEYWORDS = [
   '100 trieu'
 ];
 const EXCLUDED_PATTERNS = EXCLUDED_KEYWORDS.map((keyword) => new RegExp(`\\b${normalizeKeyword(keyword).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`));
+const STRONG_TECH_PATTERNS = [
+  /\bai\b/,
+  /\bllm\b/,
+  /\bchatgpt\b/,
+  /\blap trinh\b/,
+  /\bphan mem\b/,
+  /\bcong nghe\b/,
+  /\bkhoa hoc\b/,
+  /\bdeveloper\b/,
+  /\bprogramming\b/,
+  /\bsoftware\b/,
+  /\bcoding\b/,
+  /\bbackend\b/,
+  /\bfrontend\b/,
+  /\bfullstack\b/,
+  /\bdevops\b/,
+  /\bcloud\b/,
+  /\bsecurity\b/,
+  /\bcybersecurity\b/,
+  /\bmachine learning\b/,
+  /\bdeep learning\b/,
+  /\bdu lieu\b/,
+  /\bdata\b/,
+  /\bgame\b/,
+];
+const YOUTH_PATTERNS = [
+  /\bcuoc song\b/,
+  /\bquan diem\b/,
+  /\btranh luan\b/,
+  /\blife style\b/,
+  /\blifestyle\b/,
+  /\bminimalism\b/,
+  /\bphat trien ban than\b/,
+  /\bnguoi tre\b/,
+  /\bcareer\b/,
+  /\bnghe nghiep\b/,
+];
 
 function normalizeWhitespace(value) {
   return value.replace(/\s+/g, ' ').trim();
@@ -129,10 +179,14 @@ function keywordScore(text, keywords) {
 
 function sourcePriority(sourceUrl) {
   const normalized = normalizeKeyword(sourceUrl);
-  if (normalized.includes('khoa-hoc-cong-nghe')) return 3;
+  if (normalized.includes('khoa-hoc-cong-nghe')) return 5;
   if (normalized.includes('quan-diem-tranh-luan')) return 2;
   if (normalized.includes('life-style')) return 1;
   return 0;
+}
+
+function matchCount(text, patterns) {
+  return patterns.reduce((count, pattern) => count + (pattern.test(text) ? 1 : 0), 0);
 }
 
 async function fetchHtml(url) {
@@ -285,10 +339,12 @@ function isPreferredArticle(article) {
 }
 
 function articlePriorityScore(article) {
-  const haystack = [article.title, article.excerpt, ...(article.tags || [])].join(' ');
+  const haystack = normalizeKeyword([article.title, article.excerpt, ...(article.tags || [])].join(' '));
   return (
     keywordScore(haystack, PREFERRED_KEYWORDS) +
-    sourcePriority(article.sourceUrl || '')
+    sourcePriority(article.sourceUrl || '') +
+    matchCount(haystack, STRONG_TECH_PATTERNS) * 3 +
+    matchCount(haystack, YOUTH_PATTERNS)
   );
 }
 

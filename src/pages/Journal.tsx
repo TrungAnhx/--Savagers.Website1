@@ -33,6 +33,22 @@ const TECH_PRIORITY_PATTERNS = [
   /\bdeveloper\b/,
   /\bprogramming\b/,
   /\bsoftware\b/,
+  /\bcoding\b/,
+  /\bbackend\b/,
+  /\bfront end\b/,
+  /\bfrontend\b/,
+  /\bfullstack\b/,
+  /\bdevops\b/,
+  /\bcloud\b/,
+  /\bsecurity\b/,
+  /\bcybersecurity\b/,
+  /\bdata\b/,
+  /\bdu lieu\b/,
+  /\bmachine learning\b/,
+  /\bdeep learning\b/,
+  /\bllm\b/,
+  /\bchatgpt\b/,
+  /\bgame\b/,
 ];
 const YOUTH_PRIORITY_PATTERNS = [
   /\bquan điểm\b/,
@@ -55,7 +71,8 @@ function normalizeTag(value: string) {
 
 function articlePriorityScore(article: Article) {
   const haystack = normalizeTag([article.title, ...(article.tags || [])].join(' '));
-  if (TECH_PRIORITY_PATTERNS.some((pattern) => pattern.test(haystack))) return 3;
+  const techScore = TECH_PRIORITY_PATTERNS.reduce((score, pattern) => score + (pattern.test(haystack) ? 1 : 0), 0);
+  if (techScore > 0) return 3 + techScore;
   if (YOUTH_PRIORITY_PATTERNS.some((pattern) => pattern.test(haystack))) return 2;
   return 0;
 }
