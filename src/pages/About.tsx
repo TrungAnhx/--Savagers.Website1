@@ -58,7 +58,7 @@ export default function About({ onAddNote, isZenMode }: AboutProps) {
         <div className="animate-[fade-rise_0.6s_ease-out]">
           <header className="mb-24 text-center">
             <span className="text-primary tracking-[0.28em] uppercase text-sm font-mono mb-4 block">About Savagers</span>
-            <h1 className="text-6xl md:text-8xl text-foreground mb-8" style={{ fontFamily: "'Lora', serif" }}>
+            <h1 className="text-6xl md:text-8xl text-foreground mb-8" style={{ fontFamily: "'Instrument Serif', serif" }}>
               Savagers.
             </h1>
             <p className="text-muted-foreground text-xl md:text-2xl leading-relaxed max-w-3xl mx-auto">
@@ -99,7 +99,7 @@ export default function About({ onAddNote, isZenMode }: AboutProps) {
           <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-28">
             {brotherhoodPillars.map((pillar) => (
               <article key={pillar.title} className="liquid-glass border border-white/10 rounded-2xl p-7 min-h-[240px]">
-                <h2 className="text-2xl text-foreground mb-4" style={{ fontFamily: "'Lora', serif" }}>
+                <h2 className="text-2xl text-foreground mb-4" style={{ fontFamily: "'Instrument Serif', serif" }}>
                   {pillar.title}
                 </h2>
                 <p className="text-sm leading-7 text-muted-foreground">
@@ -111,7 +111,7 @@ export default function About({ onAddNote, isZenMode }: AboutProps) {
 
           <section className="mb-28 grid grid-cols-1 md:grid-cols-2 gap-14 items-start">
             <div className="space-y-6">
-              <h2 className="text-4xl text-foreground" style={{ fontFamily: "'Lora', serif" }}>
+              <h2 className="text-4xl text-foreground" style={{ fontFamily: "'Instrument Serif', serif" }}>
                 Web này mang lại gì?
               </h2>
               <p className="text-muted-foreground leading-8 text-lg">
@@ -126,7 +126,7 @@ export default function About({ onAddNote, isZenMode }: AboutProps) {
             </div>
 
             <div className="liquid-glass border border-white/10 rounded-3xl p-8">
-              <h3 className="text-2xl text-foreground mb-5" style={{ fontFamily: "'Lora', serif" }}>
+              <h3 className="text-2xl text-foreground mb-5" style={{ fontFamily: "'Instrument Serif', serif" }}>
                 Leave a whisper
               </h3>
               <p className="text-sm text-muted-foreground leading-7 mb-6">

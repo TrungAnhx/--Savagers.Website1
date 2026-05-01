@@ -2,13 +2,14 @@ import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { BookOpen, Calendar, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 import AmbientVideo from '../components/AmbientVideo';
+import { useArticleContent } from '../hooks/useArticleContent';
 import { useArticles } from '../hooks/useArticles';
 import { sanitizeHtml } from '../utils/sanitizeHtml';
 import {
   ARTICLES_PER_PAGE,
   MAX_ARCHIVE_PAGES,
+  displayTagLabel,
   filterArticlesBySignal,
-  getCategoryLabels,
   sortArticlesForJournal,
   type ArticleSignal,
 } from '../utils/articles';
@@ -32,7 +33,6 @@ export default function Journal({ isZenMode }: JournalProps) {
   const [activeArticleId, setActiveArticleId] = useState<string | null>(null);
   const [ignoreLocationState, setIgnoreLocationState] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedSignal, setSelectedSignal] = useState<ArticleSignal>('latest');
   const [bgIndex, setBgIndex] = useState(() => Math.floor(Math.random() * backgroundVideos.length));
 
@@ -47,20 +47,16 @@ export default function Journal({ isZenMode }: JournalProps) {
     setTimeout(() => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }, 100);
-  }, [currentPage, selectedCategory, selectedSignal]);
+  }, [currentPage, selectedSignal]);
 
   const locationArticleId = !ignoreLocationState && location.state && typeof location.state === 'object' && 'articleId' in location.state
     ? (location.state as { articleId?: string }).articleId ?? null
     : null;
 
   const currentBg = backgroundVideos[bgIndex];
-  const allCategories = useMemo(() => getCategoryLabels(articles), [articles]);
   const filteredArticles = useMemo(() => {
-    const signalArticles = sortArticlesForJournal(filterArticlesBySignal(articles, selectedSignal), selectedSignal);
-    return selectedCategory
-      ? signalArticles.filter((article) => article.tags?.includes(selectedCategory))
-      : signalArticles;
-  }, [articles, selectedCategory, selectedSignal]);
+    return sortArticlesForJournal(filterArticlesBySignal(articles, selectedSignal), selectedSignal);
+  }, [articles, selectedSignal]);
 
   const totalPages = Math.min(MAX_ARCHIVE_PAGES, Math.ceil(filteredArticles.length / ARTICLES_PER_PAGE));
   const paginatedArticles = useMemo(() => {
@@ -69,20 +65,15 @@ export default function Journal({ isZenMode }: JournalProps) {
 
   const resolvedArticleId = activeArticleId ?? locationArticleId;
   const activeArticle = resolvedArticleId ? (articles.find((article) => article.id === resolvedArticleId) ?? null) : null;
-  const sanitizedContent = useMemo(() => (activeArticle ? sanitizeHtml(activeArticle.content) : ''), [activeArticle]);
+  const { content: activeArticleContent, isLoading: isArticleContentLoading, error: articleContentError } = useArticleContent(activeArticle?.id ?? null);
+  const sanitizedContent = useMemo(() => sanitizeHtml(activeArticleContent), [activeArticleContent]);
 
   const signalOptions: Array<{ key: ArticleSignal; label: string }> = [
-    { key: 'latest', label: 'Latest' },
+    { key: 'latest', label: 'Mới nhất' },
     { key: 'tech', label: 'Tech' },
-    { key: 'life', label: 'Life' },
-    { key: 'debate', label: 'Debate' },
+    { key: 'life', label: 'Lối sống' },
+    { key: 'debate', label: 'Góc nhìn' },
   ];
-
-  const handleCategoryChange = (category: string | null) => {
-    setSelectedCategory(category);
-    setCurrentPage(1);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
 
   return (
     <div className="relative min-h-screen w-full flex flex-col pt-32 pb-40 px-6 z-10">
@@ -98,7 +89,7 @@ export default function Journal({ isZenMode }: JournalProps) {
         {!activeArticle ? (
           <div className="animate-[fade-rise_0.6s_ease-out]">
             <header className="mb-16">
-              <h1 className="text-6xl md:text-8xl text-foreground mb-6" style={{ fontFamily: "'Lora', serif" }}>
+              <h1 className="text-6xl md:text-8xl text-foreground mb-6" style={{ fontFamily: "'Instrument Serif', serif" }}>
                 The Journal.
               </h1>
               <p className="text-muted-foreground text-lg leading-relaxed max-w-xl mb-12">
@@ -111,42 +102,15 @@ export default function Journal({ isZenMode }: JournalProps) {
                     key={signal.key}
                     onClick={() => {
                       setSelectedSignal(signal.key);
-                      setSelectedCategory(null);
                       setCurrentPage(1);
                     }}
                     className={`px-5 py-2 rounded-full text-sm transition-all duration-300 ${
                       selectedSignal === signal.key
-                        ? 'bg-foreground text-background'
+                        ? 'liquid-glass liquid-glass-active text-foreground'
                         : 'liquid-glass text-muted-foreground hover:text-foreground'
                     }`}
                   >
                     {signal.label}
-                  </button>
-                ))}
-              </div>
-
-              <div className="flex flex-wrap gap-3 mb-16">
-                <button
-                  onClick={() => handleCategoryChange(null)}
-                  className={`px-5 py-2 rounded-full text-sm transition-all duration-300 ${
-                    selectedCategory === null
-                      ? 'bg-foreground text-background'
-                      : 'liquid-glass text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  All
-                </button>
-                {allCategories.map((category) => (
-                  <button
-                    key={category}
-                    onClick={() => handleCategoryChange(category)}
-                    className={`px-5 py-2 rounded-full text-sm transition-all duration-300 ${
-                      selectedCategory === category
-                        ? 'bg-foreground text-background'
-                        : 'liquid-glass text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    {category}
                   </button>
                 ))}
               </div>
@@ -189,7 +153,7 @@ export default function Journal({ isZenMode }: JournalProps) {
                       <span className="flex items-center gap-1"><Clock size={12} /> {article.readTime}</span>
                     </div>
 
-                    <h2 className="text-3xl md:text-4xl text-foreground mb-4 group-hover:text-primary/80 transition-colors" style={{ fontFamily: "'Lora', serif" }}>
+                    <h2 className="text-3xl md:text-4xl text-foreground mb-4 group-hover:text-primary/80 transition-colors" style={{ fontFamily: "'Instrument Serif', serif" }}>
                       {article.title}
                     </h2>
 
@@ -200,7 +164,7 @@ export default function Journal({ isZenMode }: JournalProps) {
                     <div className="flex flex-wrap gap-2">
                       {article.tags?.map((tag) => (
                         <span key={tag} className="text-xs px-3 py-1 rounded-full bg-white/5 text-muted-foreground">
-                          {tag}
+                          {displayTagLabel(tag)}
                         </span>
                       ))}
                     </div>
@@ -263,7 +227,7 @@ export default function Journal({ isZenMode }: JournalProps) {
             </button>
 
             <header className="mb-16">
-              <h1 className="text-5xl md:text-7xl text-foreground mb-8 leading-[1.1]" style={{ fontFamily: "'Lora', serif" }}>
+              <h1 className="text-5xl md:text-7xl text-foreground mb-8 leading-[1.1]" style={{ fontFamily: "'Instrument Serif', serif" }}>
                 {activeArticle.title}
               </h1>
 
@@ -278,16 +242,33 @@ export default function Journal({ isZenMode }: JournalProps) {
               </div>
             </header>
 
-            <div
-              className="prose prose-invert prose-lg max-w-none
+            {isArticleContentLoading && (
+              <div className="space-y-4 animate-pulse">
+                <div className="h-5 w-full bg-white/10 rounded" />
+                <div className="h-5 w-11/12 bg-white/10 rounded" />
+                <div className="h-5 w-4/5 bg-white/10 rounded" />
+                <div className="h-80 w-full bg-white/10 rounded-xl mt-10" />
+              </div>
+            )}
+
+            {!isArticleContentLoading && articleContentError && (
+              <p className="text-muted-foreground italic py-12">
+                Could not load this article right now.
+              </p>
+            )}
+
+            {!isArticleContentLoading && !articleContentError && (
+              <div
+                className="prose prose-invert prose-lg max-w-none
               prose-p:text-muted-foreground prose-p:leading-relaxed prose-p:mb-8
               prose-headings:text-foreground prose-headings:font-normal prose-headings:mt-12 prose-headings:mb-6
               [&>h3]:text-3xl [&>h3]:font-serif
               prose-a:text-foreground prose-a:underline prose-a:underline-offset-4 hover:prose-a:text-primary
               prose-img:rounded-xl prose-img:shadow-2xl prose-img:mx-auto prose-img:my-12
               selection:bg-foreground selection:text-background"
-              dangerouslySetInnerHTML={{ __html: sanitizedContent }}
-            />
+                dangerouslySetInnerHTML={{ __html: sanitizedContent }}
+              />
+            )}
 
             <div className="mt-20 pt-8 border-t border-border/40 flex justify-between items-center">
               <p className="text-muted-foreground italic font-serif text-xl">"End of transmission."</p>

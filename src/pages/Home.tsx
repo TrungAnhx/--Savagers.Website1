@@ -2,7 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Calendar, Clock, ArrowRight } from 'lucide-react';
 import AmbientVideo from '../components/AmbientVideo';
 import { useArticles } from '../hooks/useArticles';
-import { getFeaturedTodayArticles } from '../utils/articles';
+import { displayTagLabel, getFeaturedTodayArticles } from '../utils/articles';
 
 interface HomeProps {
   isPlaying: boolean;
@@ -19,9 +19,8 @@ export default function Home({ isPlaying, togglePlay, isZenMode }: HomeProps) {
     <div className="relative min-h-screen w-full flex flex-col flex-1">
       {/* Fixed Video Background so it stays while scrolling */}
       <AmbientVideo
-        src="/backgrounds/home_bg_4k.mp4"
+        src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260314_131748_f2ca2a28-fed7-44c8-b9a9-bd9acdd5ec31.mp4"
         className="fixed inset-0 w-full h-full object-cover z-0 pointer-events-none"
-        opacityClassName="fixed inset-0 bg-gradient-to-b from-transparent via-background/40 to-background/90 z-0 pointer-events-none"
       />
 
       <div className={`relative z-10 flex-1 flex flex-col transition-opacity duration-1000 ${isZenMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
@@ -29,13 +28,13 @@ export default function Home({ isPlaying, togglePlay, isZenMode }: HomeProps) {
         <section className="relative z-10 flex flex-col items-center justify-center text-center px-6 min-h-screen">
         <h1 
           className="animate-fade-rise text-5xl sm:text-7xl md:text-8xl leading-[0.95] tracking-[-2.46px] max-w-7xl font-normal text-foreground"
-          style={{ fontFamily: "'Lora', serif" }}
+          style={{ fontFamily: "'Instrument Serif', serif" }}
         >
-          Where <em className="not-italic text-muted-foreground">melodies</em> fade <em className="not-italic text-muted-foreground">into the void.</em>
+          Where <em className="not-italic text-muted-foreground">dreams</em> rise <em className="not-italic text-muted-foreground">through the silence.</em>
         </h1>
         
         <p className="animate-fade-rise-delay text-muted-foreground text-base sm:text-lg max-w-2xl mt-8 leading-relaxed">
-          We curate soundscapes for deep thinkers, nocturnal creators, and quiet rebels. Amid the noise, we broadcast ambient rhythms for sharp focus and infinite chill.
+          We're designing tools for deep thinkers, bold creators, and quiet rebels. Amid the chaos, we build digital spaces for sharp focus and inspired work.
         </p>
         
         <button 
@@ -44,7 +43,7 @@ export default function Home({ isPlaying, togglePlay, isZenMode }: HomeProps) {
           }}
           className="animate-fade-rise-delay-2 liquid-glass rounded-full px-14 py-5 text-base text-foreground mt-12 hover:scale-[1.03] cursor-pointer inline-block"
         >
-          Explore Frequencies
+          Begin Journey
         </button>
         <button onClick={togglePlay} className="mt-4 text-muted-foreground hover:text-foreground transition-colors text-sm opacity-0 absolute">
           {isPlaying ? 'Playing' : 'Paused'}
@@ -55,7 +54,7 @@ export default function Home({ isPlaying, togglePlay, isZenMode }: HomeProps) {
       <section id="featured-journal" className="relative z-10 w-full max-w-7xl mx-auto px-6 py-32">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
           <div>
-            <h2 className="text-4xl md:text-6xl text-foreground mb-4" style={{ fontFamily: "'Lora', serif" }}>
+            <h2 className="text-4xl md:text-6xl text-foreground mb-4" style={{ fontFamily: "'Instrument Serif', serif" }}>
               Featured Today.
             </h2>
             <p className="text-muted-foreground text-lg max-w-xl">
@@ -92,7 +91,7 @@ export default function Home({ isPlaying, togglePlay, isZenMode }: HomeProps) {
                 <span className="flex items-center gap-1"><Clock size={12} /> {entry.article.readTime}</span>
               </div>
               
-              <h3 className="text-2xl text-foreground mb-4 group-hover:text-primary/80 transition-colors flex-1" style={{ fontFamily: "'Lora', serif" }}>
+              <h3 className="text-2xl text-foreground mb-4 group-hover:text-primary/80 transition-colors flex-1" style={{ fontFamily: "'Instrument Serif', serif" }}>
                 {entry.article.title}
               </h3>
               
@@ -103,7 +102,7 @@ export default function Home({ isPlaying, togglePlay, isZenMode }: HomeProps) {
               <div className="flex flex-wrap gap-2 mt-auto">
                 {entry.article.tags.map(tag => (
                   <span key={tag} className="text-[10px] px-3 py-1 rounded-full border border-border/50 text-muted-foreground">
-                    {tag}
+                    {displayTagLabel(tag)}
                   </span>
                 ))}
               </div>

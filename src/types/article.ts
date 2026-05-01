@@ -4,7 +4,7 @@ export interface Article {
   date: string;
   readTime: string;
   excerpt: string;
-  content: string;
+  content?: string;
   tags: string[];
   link?: string;
   source?: 'spiderum' | 'txnam';

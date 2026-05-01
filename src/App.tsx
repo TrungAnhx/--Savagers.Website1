@@ -1,6 +1,6 @@
 import { Suspense, lazy, useMemo, useState } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { Volume2, VolumeX, Play, Pause, SkipForward, SkipBack, Disc3, Shuffle, Repeat, Repeat1, Quote } from 'lucide-react';
+import { Volume2, VolumeX, Play, Pause, SkipForward, SkipBack, Disc3, Shuffle, Repeat, Repeat1, MessageCircle } from 'lucide-react';
 import FloatingNotes from './components/FloatingNotes';
 import notesData from './data/notes.json';
 import { useAudioPlayer } from './hooks/useAudioPlayer';
@@ -83,9 +83,9 @@ function Layout() {
       {showWhispers ? <FloatingNotes notes={allNotes} /> : null}
 
       <div className="flex-1 flex flex-col relative w-full min-h-screen">
-        <nav className={`absolute top-0 w-full z-50 flex flex-row items-center justify-between px-8 py-6 max-w-7xl mx-auto left-1/2 -translate-x-1/2 transition-opacity duration-1000 ${isZenMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+        <nav className={`absolute top-4 w-[calc(100%-2rem)] z-50 flex flex-row items-center justify-between px-6 md:px-8 py-4 max-w-7xl mx-auto left-1/2 -translate-x-1/2 liquid-glass rounded-full transition-opacity duration-1000 ${isZenMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
           <div className="flex-1 flex justify-start">
-            <Link to="/" style={{ fontFamily: "'Lora', serif" }} className="text-3xl tracking-tight text-foreground">
+            <Link to="/" className="text-3xl tracking-tight text-foreground font-display">
               Savagers.
             </Link>
           </div>
@@ -100,11 +100,12 @@ function Layout() {
           <div className="flex-1 flex items-center justify-end gap-4">
             <button
               onClick={toggleWhispers}
-              className={`transition-colors cursor-pointer flex items-center justify-center ${showWhispers ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-              title={showWhispers ? 'Hide whispers' : 'Show whispers'}
-              aria-label={showWhispers ? 'Hide whispers' : 'Show whispers'}
+              className={`liquid-glass liquid-glass-interactive rounded-full px-3 py-2 text-sm cursor-pointer flex items-center justify-center gap-2 ${showWhispers ? 'liquid-glass-active text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+              title={showWhispers ? 'Hide floating notes' : 'Show floating notes'}
+              aria-label={showWhispers ? 'Hide floating notes' : 'Show floating notes'}
             >
-              <Quote size={20} />
+              <MessageCircle size={17} />
+              <span className="hidden md:inline">Notes</span>
             </button>
 
             {isHome && (
@@ -113,7 +114,7 @@ function Layout() {
                   {isPlaying ? <Volume2 size={20} /> : <VolumeX size={20} />}
                 </button>
 
-                <button onClick={togglePlay} className="liquid-glass rounded-full px-6 py-2.5 text-sm text-foreground hover:scale-[1.03] cursor-pointer">
+                <button onClick={togglePlay} className="liquid-glass liquid-glass-interactive rounded-full px-6 py-2.5 text-sm text-foreground cursor-pointer">
                   {isPlaying ? 'Pause' : 'Tune In'}
                 </button>
               </>

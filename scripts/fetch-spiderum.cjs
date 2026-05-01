@@ -11,6 +11,7 @@ const SOURCE_URLS = (process.env.SPIDERUM_SOURCE_URLS ||
   .filter(Boolean);
 const TXNAM_SOURCE_URL = process.env.TXNAM_SOURCE_URL || 'https://txnam.net';
 const OUTPUT_PATH = './public/data/articles.json';
+const CONTENT_DIR = './public/data/articles';
 const MAX_ARTICLES = Number.parseInt(process.env.SPIDERUM_MAX_ARTICLES || '28', 10);
 const TXNAM_MAX_ARTICLES = Number.parseInt(process.env.TXNAM_MAX_ARTICLES || '10', 10);
 const TOTAL_ARTICLE_LIMIT = Number.parseInt(process.env.TOTAL_ARTICLE_LIMIT || '100', 10);
@@ -101,6 +102,25 @@ function normalizeWhitespace(value) {
 
 function slugFromUrl(url) {
   return url.split('/').filter(Boolean).pop() || url;
+}
+
+function contentPathForArticle(articleId) {
+  return path.join(CONTENT_DIR, `${encodeURIComponent(articleId)}.json`);
+}
+
+function readStoredArticleContent(article) {
+  if (typeof article.content === 'string') return article.content;
+  try {
+    const contentPayload = JSON.parse(fs.readFileSync(contentPathForArticle(article.id), 'utf8'));
+    return typeof contentPayload.content === 'string' ? contentPayload.content : '';
+  } catch {
+    return '';
+  }
+}
+
+function articleMetadata(article) {
+  const { content, ...metadata } = article;
+  return metadata;
 }
 
 function normalizeKeyword(value) {
@@ -493,13 +513,34 @@ async function main() {
   [...spiderumArticles, ...existingSpiderumArticles].forEach((article) => {
     if (!article?.link || seenSpiderumLinks.has(article.link)) return;
     seenSpiderumLinks.add(article.link);
-    spiderumArchive.push({ ...article, source: 'spiderum' });
+    spiderumArchive.push({
+      ...article,
+      content: readStoredArticleContent(article),
+      source: 'spiderum',
+    });
   });
 
   const spiderumLimit = Math.max(0, TOTAL_ARTICLE_LIMIT - txnamArticles.length);
   const mergedArticles = [...spiderumArchive.slice(0, spiderumLimit), ...txnamArticles].slice(0, TOTAL_ARTICLE_LIMIT);
   fs.mkdirSync(path.dirname(OUTPUT_PATH), { recursive: true });
-  fs.writeFileSync(OUTPUT_PATH, JSON.stringify(mergedArticles, null, 2) + '\n', 'utf8');
+  fs.mkdirSync(CONTENT_DIR, { recursive: true });
+
+  const activeContentFiles = new Set();
+  mergedArticles.forEach((article) => {
+    const contentPath = contentPathForArticle(article.id);
+    activeContentFiles.add(path.basename(contentPath));
+    fs.writeFileSync(
+      contentPath,
+      JSON.stringify({ id: article.id, content: article.content || '' }, null, 2) + '\n',
+      'utf8'
+    );
+  });
+
+  fs.readdirSync(CONTENT_DIR)
+    .filter((file) => file.endsWith('.json') && !activeContentFiles.has(file))
+    .forEach((file) => fs.unlinkSync(path.join(CONTENT_DIR, file)));
+
+  fs.writeFileSync(OUTPUT_PATH, JSON.stringify(mergedArticles.map(articleMetadata), null, 2) + '\n', 'utf8');
   console.log(`Saved ${Math.min(spiderumArchive.length, spiderumLimit)} Spiderum articles and ${txnamArticles.length} txnam articles.`);
 }
 

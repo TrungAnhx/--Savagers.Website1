@@ -16,7 +16,7 @@
     --accent-foreground: 0 0% 100%;
     --border: 0 0% 18%;
     --input: 0 0% 18%;
-    --font-display: 'Lora', serif;
+    --font-display: 'Instrument Serif', serif;
     --font-body: 'Inter', sans-serif;
   }
   
@@ -35,6 +35,27 @@
   position: relative;
   overflow: hidden;
   transition: transform 0.3s ease;
+}
+
+.liquid-glass-active {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.035)),
+    rgba(255, 255, 255, 0.025);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.18),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.08),
+    0 10px 30px rgba(0, 0, 0, 0.16);
+}
+
+.liquid-glass-interactive {
+  transition: transform 0.3s ease, color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.liquid-glass-interactive:hover {
+  transform: scale(1.03);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.025)),
+    rgba(255, 255, 255, 0.02);
 }
 
 .liquid-glass::before {

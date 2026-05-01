@@ -61,7 +61,7 @@ const DEBATE_PRIORITY_PATTERNS = [
   /\bthinking out loud\b/,
 ];
 
-export type ArticleSignal = 'all' | 'latest' | 'tech' | 'life' | 'debate';
+export type ArticleSignal = 'latest' | 'tech' | 'life' | 'debate';
 
 export function normalizeTag(value: string) {
   return value
@@ -79,7 +79,7 @@ export function articlePriorityScore(article: Article) {
   return 0;
 }
 
-export function getArticleSignal(article: Article): Exclude<ArticleSignal, 'all' | 'latest'> | null {
+export function getArticleSignal(article: Article): Exclude<ArticleSignal, 'latest'> | null {
   const haystack = normalizeTag([article.title, ...(article.tags || [])].join(' '));
   if (TECH_PRIORITY_PATTERNS.some((pattern) => pattern.test(haystack))) return 'tech';
   if (DEBATE_PRIORITY_PATTERNS.some((pattern) => pattern.test(haystack))) return 'debate';
@@ -91,28 +91,9 @@ export function limitArchive(articles: Article[]) {
   return articles.slice(0, MAX_ARCHIVE_ARTICLES);
 }
 
-export function getCategoryLabels(articles: Article[]) {
-  const priorityLabels = ['AI', 'Lập Trình', 'Công nghệ', 'Quan điểm - Tranh luận', 'Cuộc sống'];
-  const categoryCounts = articles.flatMap((article) => article.tags || []).reduce((acc, tag) => {
-    acc[tag] = (acc[tag] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-
-  return [
-    ...priorityLabels.filter((label) =>
-      Object.keys(categoryCounts).some((tag) => normalizeTag(tag) === normalizeTag(label))
-    ),
-    ...Object.entries(categoryCounts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 8)
-      .map(([tag]) => tag)
-      .filter((tag) => !priorityLabels.some((label) => normalizeTag(label) === normalizeTag(tag))),
-  ].slice(0, 6);
-}
-
 export function filterArticlesBySignal(articles: Article[], signal: ArticleSignal) {
   const cappedArticles = limitArchive(articles);
-  if (signal === 'all' || signal === 'latest') return cappedArticles;
+  if (signal === 'latest') return cappedArticles;
   return cappedArticles.filter((article) => getArticleSignal(article) === signal);
 }
 
@@ -124,13 +105,13 @@ export function sortArticlesForJournal(articles: Article[], signal: ArticleSigna
 
 export function getFeaturedTodayArticles(articles: Article[]) {
   const cappedArticles = limitArchive(articles);
-  const buckets: Array<{ signal: Exclude<ArticleSignal, 'all' | 'latest'>; label: string }> = [
+  const buckets: Array<{ signal: Exclude<ArticleSignal, 'latest'>; label: string }> = [
     { signal: 'tech', label: 'Tech Signal' },
-    { signal: 'life', label: 'Life Signal' },
-    { signal: 'debate', label: 'Debate Signal' },
+    { signal: 'life', label: 'Lối sống' },
+    { signal: 'debate', label: 'Góc nhìn' },
   ];
   const usedIds = new Set<string>();
-  const featured: Array<{ article: Article; label: string; signal: Exclude<ArticleSignal, 'all' | 'latest'> }> = [];
+  const featured: Array<{ article: Article; label: string; signal: Exclude<ArticleSignal, 'latest'> }> = [];
 
   buckets.forEach(({ signal, label }) => {
     const article = cappedArticles.find((item) => !usedIds.has(item.id) && getArticleSignal(item) === signal)
@@ -141,4 +122,13 @@ export function getFeaturedTodayArticles(articles: Article[]) {
   });
 
   return featured;
+}
+
+export function displayTagLabel(tag: string) {
+  const normalized = normalizeTag(tag.replace(/_/g, ' '));
+  if (normalized === 'life style' || normalized === 'lifestyle') return 'Lối sống';
+  if (normalized === 'thinking out loud') return 'Góc nhìn';
+  if (normalized === 'khoa hoc cong nghe') return 'Khoa học - Công nghệ';
+  if (normalized === 'quan diem tranh luan') return 'Quan điểm - Tranh luận';
+  return tag.replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
 }
