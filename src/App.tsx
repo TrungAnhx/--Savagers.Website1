@@ -98,26 +98,28 @@ function Layout() {
           </ul>
 
           <div className="flex min-w-0 md:min-w-[260px] items-center justify-end gap-3 md:gap-4">
-            <button
-              onClick={toggleWhispers}
-              className={`liquid-glass liquid-glass-interactive rounded-full px-3 py-2 text-sm cursor-pointer flex items-center justify-center gap-2 ${showWhispers ? 'liquid-glass-active text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-              title={showWhispers ? 'Hide ambient notes' : 'Show ambient notes'}
-              aria-label={showWhispers ? 'Hide ambient notes' : 'Show ambient notes'}
-            >
-              <MessageCircle size={17} />
-              <span className="hidden md:inline">{showWhispers ? 'Notes On' : 'Notes Off'}</span>
-            </button>
+            <div className="flex items-center gap-2 md:gap-3">
+              <button
+                onClick={toggleWhispers}
+                className={`liquid-glass liquid-glass-interactive rounded-full px-3 py-2 md:px-4 md:py-2.5 text-sm cursor-pointer flex min-w-10 md:min-w-[112px] items-center justify-center gap-2 ${showWhispers ? 'liquid-glass-active text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                title={showWhispers ? 'Hide ambient notes' : 'Show ambient notes'}
+                aria-label={showWhispers ? 'Hide ambient notes' : 'Show ambient notes'}
+              >
+                <MessageCircle size={17} />
+                <span className="hidden md:inline">{showWhispers ? 'Notes On' : 'Notes Off'}</span>
+              </button>
 
-            {isHome && (
-              <>
-                <button onClick={togglePlay} className="text-foreground hover:text-muted-foreground transition-colors cursor-pointer flex items-center justify-center" aria-label="Toggle ambient sound">
-                  {isPlaying ? <Volume2 size={20} /> : <VolumeX size={20} />}
-                </button>
-
-                <button onClick={togglePlay} className="liquid-glass liquid-glass-interactive rounded-full px-6 py-2.5 text-sm text-foreground cursor-pointer">
+              {isHome && (
+                <button onClick={togglePlay} className="liquid-glass liquid-glass-interactive rounded-full px-5 py-2.5 text-sm text-foreground cursor-pointer min-w-[92px]">
                   {isPlaying ? 'Pause' : 'Tune In'}
                 </button>
-              </>
+              )}
+            </div>
+
+            {isHome && (
+              <button onClick={togglePlay} className="text-foreground hover:text-muted-foreground transition-colors cursor-pointer flex h-10 w-10 items-center justify-center" aria-label="Toggle ambient sound">
+                {isPlaying ? <Volume2 size={20} /> : <VolumeX size={20} />}
+              </button>
             )}
           </div>
         </nav>
