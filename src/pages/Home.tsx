@@ -103,7 +103,7 @@ export default function Home({ isPlaying, togglePlay, isZenMode }: HomeProps) {
 
               <div className="flex flex-wrap gap-2 mt-auto">
                 {entry.article.tags.map(tag => (
-                  <span key={tag} className="text-[10px] px-3 py-1 rounded-full border border-border/50 text-muted-foreground">
+                  <span key={tag} className="text-[10px] px-3 py-1 rounded-full bg-white/10 border border-white/20 text-white/80 backdrop-blur-sm">
                     {displayTagLabel(tag)}
                   </span>
                 ))}
@@ -113,12 +113,12 @@ export default function Home({ isPlaying, togglePlay, isZenMode }: HomeProps) {
         </div>
 
         {!isLoading && articles.length > 0 && (
-          <div className="mt-16 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-            <span>{articles.length} articles live in the archive</span>
-            <span className="hidden md:inline text-border">/</span>
-            <span>Runtime-loaded to keep the app lighter</span>
-            <span className="hidden md:inline text-border">/</span>
-            <span>Archive capped at 100 posts</span>
+          <div className="mt-16 liquid-glass rounded-full px-5 py-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-white/78 w-fit max-w-full">
+            <span className="whitespace-nowrap">{articles.length} articles live in the archive</span>
+            <span className="hidden md:inline text-white/35">/</span>
+            <span className="whitespace-nowrap">Runtime-loaded metadata</span>
+            <span className="hidden md:inline text-white/35">/</span>
+            <span className="whitespace-nowrap">Archive capped at 100 posts</span>
           </div>
         )}
         </div>
