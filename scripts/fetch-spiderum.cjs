@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 const cheerio = require('cheerio');
 
 const BASE_URL = 'https://spiderum.com';
@@ -9,9 +10,10 @@ const SOURCE_URLS = (process.env.SPIDERUM_SOURCE_URLS ||
   .map((url) => url.trim())
   .filter(Boolean);
 const TXNAM_SOURCE_URL = process.env.TXNAM_SOURCE_URL || 'https://txnam.net';
-const OUTPUT_PATH = './src/data/articles.json';
+const OUTPUT_PATH = './public/data/articles.json';
 const MAX_ARTICLES = Number.parseInt(process.env.SPIDERUM_MAX_ARTICLES || '28', 10);
 const TXNAM_MAX_ARTICLES = Number.parseInt(process.env.TXNAM_MAX_ARTICLES || '10', 10);
+const TOTAL_ARTICLE_LIMIT = Number.parseInt(process.env.TOTAL_ARTICLE_LIMIT || '100', 10);
 const PREFERRED_KEYWORDS = [
   'ai',
   'công nghệ',
@@ -477,9 +479,28 @@ async function fetchTxnamArticles() {
 async function main() {
   const spiderumArticles = await fetchSpiderumArticles();
   const txnamArticles = await fetchTxnamArticles();
-  const mergedArticles = [...spiderumArticles, ...txnamArticles];
+  let existingArticles = [];
+  try {
+    existingArticles = JSON.parse(fs.readFileSync(OUTPUT_PATH, 'utf8'));
+  } catch {
+    existingArticles = [];
+  }
+
+  const existingSpiderumArticles = existingArticles.filter((article) => article?.source === 'spiderum' && typeof article.link === 'string');
+  const spiderumArchive = [];
+  const seenSpiderumLinks = new Set();
+
+  [...spiderumArticles, ...existingSpiderumArticles].forEach((article) => {
+    if (!article?.link || seenSpiderumLinks.has(article.link)) return;
+    seenSpiderumLinks.add(article.link);
+    spiderumArchive.push({ ...article, source: 'spiderum' });
+  });
+
+  const spiderumLimit = Math.max(0, TOTAL_ARTICLE_LIMIT - txnamArticles.length);
+  const mergedArticles = [...spiderumArchive.slice(0, spiderumLimit), ...txnamArticles].slice(0, TOTAL_ARTICLE_LIMIT);
+  fs.mkdirSync(path.dirname(OUTPUT_PATH), { recursive: true });
   fs.writeFileSync(OUTPUT_PATH, JSON.stringify(mergedArticles, null, 2) + '\n', 'utf8');
-  console.log(`Saved ${spiderumArticles.length} Spiderum articles and ${txnamArticles.length} txnam articles.`);
+  console.log(`Saved ${Math.min(spiderumArchive.length, spiderumLimit)} Spiderum articles and ${txnamArticles.length} txnam articles.`);
 }
 
 main().catch((error) => {

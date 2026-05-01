@@ -1,17 +1,8 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { Calendar, Clock, ArrowRight } from 'lucide-react';
-import articlesData from '../data/articles.json';
 import AmbientVideo from '../components/AmbientVideo';
-
-interface Article {
-  id: string;
-  title: string;
-  date: string;
-  readTime: string;
-  excerpt: string;
-  content: string;
-  tags: string[];
-}
+import { useArticles } from '../hooks/useArticles';
+import { getFeaturedTodayArticles } from '../utils/articles';
 
 interface HomeProps {
   isPlaying: boolean;
@@ -21,7 +12,8 @@ interface HomeProps {
 
 export default function Home({ isPlaying, togglePlay, isZenMode }: HomeProps) {
   const navigate = useNavigate();
-  const featuredArticles = (articlesData as Article[]).slice(0, 3);
+  const { articles, isLoading } = useArticles();
+  const featuredArticles = getFeaturedTodayArticles(articles);
 
   return (
     <div className="relative min-h-screen w-full flex flex-col flex-1">
@@ -64,10 +56,10 @@ export default function Home({ isPlaying, togglePlay, isZenMode }: HomeProps) {
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
           <div>
             <h2 className="text-4xl md:text-6xl text-foreground mb-4" style={{ fontFamily: "'Lora', serif" }}>
-              Random Thoughts.
+              Featured Today.
             </h2>
             <p className="text-muted-foreground text-lg max-w-xl">
-              A glimpse into the minds of quiet rebels. Deep dives into life, coding, and the future.
+              One tech signal, one life signal, one debate signal. A calmer way to enter the archive.
             </p>
           </div>
           <Link to="/journal" className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2 group">
@@ -76,30 +68,40 @@ export default function Home({ isPlaying, togglePlay, isZenMode }: HomeProps) {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {featuredArticles.map((article, idx) => (
+          {isLoading && Array.from({ length: 3 }).map((_, idx) => (
+            <div
+              key={idx}
+              className="bg-white/5 border border-border/40 rounded-2xl p-8 min-h-[320px] animate-pulse"
+            />
+          ))}
+
+          {!isLoading && featuredArticles.map((entry, idx) => (
             <article 
-              key={article.id} 
+              key={entry.article.id} 
               className="group cursor-pointer bg-white/5 border border-border/40 rounded-2xl p-8 hover:bg-white/10 transition-colors flex flex-col animate-[fade-rise_0.6s_ease-out]"
               style={{ animationDelay: `${idx * 0.15}s`, animationFillMode: 'both' }}
               onClick={() => {
-                navigate('/journal', { state: { articleId: article.id } });
+                navigate('/journal', { state: { articleId: entry.article.id } });
               }}
             >
+              <span className="text-[11px] uppercase tracking-[0.24em] text-primary mb-5 font-mono">
+                {entry.label}
+              </span>
               <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground font-mono mb-6">
-                <span className="flex items-center gap-1"><Calendar size={12} /> {article.date}</span>
-                <span className="flex items-center gap-1"><Clock size={12} /> {article.readTime}</span>
+                <span className="flex items-center gap-1"><Calendar size={12} /> {entry.article.date}</span>
+                <span className="flex items-center gap-1"><Clock size={12} /> {entry.article.readTime}</span>
               </div>
               
               <h3 className="text-2xl text-foreground mb-4 group-hover:text-primary/80 transition-colors flex-1" style={{ fontFamily: "'Lora', serif" }}>
-                {article.title}
+                {entry.article.title}
               </h3>
               
               <p className="text-muted-foreground text-sm leading-relaxed mb-8 line-clamp-3">
-                {article.excerpt}
+                {entry.article.excerpt}
               </p>
 
               <div className="flex flex-wrap gap-2 mt-auto">
-                {article.tags.map(tag => (
+                {entry.article.tags.map(tag => (
                   <span key={tag} className="text-[10px] px-3 py-1 rounded-full border border-border/50 text-muted-foreground">
                     {tag}
                   </span>
@@ -108,6 +110,16 @@ export default function Home({ isPlaying, togglePlay, isZenMode }: HomeProps) {
             </article>
           ))}
         </div>
+
+        {!isLoading && articles.length > 0 && (
+          <div className="mt-16 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+            <span>{articles.length} articles live in the archive</span>
+            <span className="hidden md:inline text-border">•</span>
+            <span>Runtime-loaded to keep the app lighter</span>
+            <span className="hidden md:inline text-border">•</span>
+            <span>Archive capped at 100 posts</span>
+          </div>
+        )}
       </section>
       </div>
     </div>

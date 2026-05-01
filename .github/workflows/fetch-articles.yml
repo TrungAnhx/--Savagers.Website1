@@ -29,12 +29,13 @@ jobs:
           SPIDERUM_MAX_ARTICLES: 28
           TXNAM_SOURCE_URL: https://txnam.net
           TXNAM_MAX_ARTICLES: 10
+          TOTAL_ARTICLE_LIMIT: 100
         run: node scripts/fetch-spiderum.cjs
 
       - name: Commit and Push changes
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action Bot"
-          git add src/data/articles.json
+          git add public/data/articles.json
           git commit -m "Auto-update: Fetch articles" || echo "No changes to commit"
           git push

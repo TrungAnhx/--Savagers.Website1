@@ -1,107 +1,24 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { BookOpen, ChevronLeft, Calendar, Clock, ChevronRight } from 'lucide-react';
-import articlesData from '../data/articles.json';
-import { sanitizeHtml } from '../utils/sanitizeHtml';
+import { BookOpen, Calendar, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 import AmbientVideo from '../components/AmbientVideo';
-
-interface Article {
-  id: string;
-  title: string;
-  date: string;
-  readTime: string;
-  excerpt: string;
-  content: string;
-  tags: string[];
-  link?: string;
-}
-
-const articles: Article[] = articlesData as Article[];
-const PRIORITY_CATEGORY_LABELS = ['AI', 'Lập Trình', 'Công nghệ', 'Quan điểm - Tranh luận', 'Cuộc sống'];
-const TECH_PRIORITY_PATTERNS = [
-  /\bai\b/,
-  /\bit\b/,
-  /\bcode\b/,
-  /\blập trình\b/,
-  /\blap trinh\b/,
-  /\bcông nghệ\b/,
-  /\bcong nghe\b/,
-  /\bkhoa học\b/,
-  /\bkhoa hoc\b/,
-  /\bphần mềm\b/,
-  /\bphan mem\b/,
-  /\bdeveloper\b/,
-  /\bprogramming\b/,
-  /\bsoftware\b/,
-  /\bcoding\b/,
-  /\bbackend\b/,
-  /\bfront end\b/,
-  /\bfrontend\b/,
-  /\bfullstack\b/,
-  /\bdevops\b/,
-  /\bcloud\b/,
-  /\bsecurity\b/,
-  /\bcybersecurity\b/,
-  /\bdata\b/,
-  /\bdu lieu\b/,
-  /\bmachine learning\b/,
-  /\bdeep learning\b/,
-  /\bllm\b/,
-  /\bchatgpt\b/,
-  /\bgame\b/,
-];
-const YOUTH_PRIORITY_PATTERNS = [
-  /\bquan điểm\b/,
-  /\bquan diem\b/,
-  /\btranh luận\b/,
-  /\btranh luan\b/,
-  /\bcuộc sống\b/,
-  /\bcuoc song\b/,
-  /\blife\b/,
-  /\bminimalism\b/,
-  /\burban life\b/,
-];
-
-function normalizeTag(value: string) {
-  return value
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '');
-}
-
-function articlePriorityScore(article: Article) {
-  const haystack = normalizeTag([article.title, ...(article.tags || [])].join(' '));
-  const techScore = TECH_PRIORITY_PATTERNS.reduce((score, pattern) => score + (pattern.test(haystack) ? 1 : 0), 0);
-  if (techScore > 0) return 3 + techScore;
-  if (YOUTH_PRIORITY_PATTERNS.some((pattern) => pattern.test(haystack))) return 2;
-  return 0;
-}
-
-// Calculate category frequencies and take the top 5
-const categoryCounts = articles.flatMap(a => a.tags || []).reduce((acc, tag) => {
-  acc[tag] = (acc[tag] || 0) + 1;
-  return acc;
-}, {} as Record<string, number>);
-
-const allCategories = [
-  ...PRIORITY_CATEGORY_LABELS.filter((label) =>
-    Object.keys(categoryCounts).some((tag) => normalizeTag(tag) === normalizeTag(label))
-  ),
-  ...Object.entries(categoryCounts)
-  .sort((a, b) => b[1] - a[1])
-  .slice(0, 8)
-  .map(e => e[0])
-  .filter((tag) => !PRIORITY_CATEGORY_LABELS.some((label) => normalizeTag(label) === normalizeTag(tag)))
-].slice(0, 6);
-
-const ARTICLES_PER_PAGE = 10;
+import { useArticles } from '../hooks/useArticles';
+import { sanitizeHtml } from '../utils/sanitizeHtml';
+import {
+  ARTICLES_PER_PAGE,
+  MAX_ARCHIVE_PAGES,
+  filterArticlesBySignal,
+  getCategoryLabels,
+  sortArticlesForJournal,
+  type ArticleSignal,
+} from '../utils/articles';
 
 const backgroundVideos = [
-  "/backgrounds/bg1.mp4",
-  "/backgrounds/bg2.mp4",
-  "/backgrounds/bg3.mp4",
-  "/backgrounds/bg4.mp4",
-  "/backgrounds/bg5.mp4"
+  '/backgrounds/bg1.mp4',
+  '/backgrounds/bg2.mp4',
+  '/backgrounds/bg3.mp4',
+  '/backgrounds/bg4.mp4',
+  '/backgrounds/bg5.mp4',
 ];
 
 interface JournalProps {
@@ -111,11 +28,12 @@ interface JournalProps {
 export default function Journal({ isZenMode }: JournalProps) {
   const location = useLocation();
   const navigate = useNavigate();
+  const { articles, isLoading, error } = useArticles();
   const [activeArticleId, setActiveArticleId] = useState<string | null>(null);
   const [ignoreLocationState, setIgnoreLocationState] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-
+  const [selectedSignal, setSelectedSignal] = useState<ArticleSignal>('latest');
   const [bgIndex, setBgIndex] = useState(() => Math.floor(Math.random() * backgroundVideos.length));
 
   useEffect(() => {
@@ -125,52 +43,51 @@ export default function Journal({ isZenMode }: JournalProps) {
     return () => clearInterval(interval);
   }, []);
 
-  const currentBg = backgroundVideos[bgIndex];
-
-  // Scroll to top when page changes
   useEffect(() => {
     setTimeout(() => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }, 100);
-  }, [currentPage, selectedCategory]);
+  }, [currentPage, selectedCategory, selectedSignal]);
 
   const locationArticleId = !ignoreLocationState && location.state && typeof location.state === 'object' && 'articleId' in location.state
     ? (location.state as { articleId?: string }).articleId ?? null
     : null;
-  const resolvedArticleId = activeArticleId ?? locationArticleId;
-  const activeArticle = resolvedArticleId ? (articles.find((a) => a.id === resolvedArticleId) ?? null) : null;
-  const sanitizedContent = useMemo(
-    () => (activeArticle ? sanitizeHtml(activeArticle.content) : ''),
-    [activeArticle]
-  );
 
+  const currentBg = backgroundVideos[bgIndex];
+  const allCategories = useMemo(() => getCategoryLabels(articles), [articles]);
   const filteredArticles = useMemo(() => {
-    const matchingArticles = selectedCategory 
-      ? articles.filter(a => a.tags && a.tags.includes(selectedCategory))
-      : articles;
-    return [...matchingArticles].sort((a, b) => articlePriorityScore(b) - articlePriorityScore(a));
-  }, [selectedCategory]);
+    const signalArticles = sortArticlesForJournal(filterArticlesBySignal(articles, selectedSignal), selectedSignal);
+    return selectedCategory
+      ? signalArticles.filter((article) => article.tags?.includes(selectedCategory))
+      : signalArticles;
+  }, [articles, selectedCategory, selectedSignal]);
 
-  const totalPages = Math.ceil(filteredArticles.length / ARTICLES_PER_PAGE);
+  const totalPages = Math.min(MAX_ARCHIVE_PAGES, Math.ceil(filteredArticles.length / ARTICLES_PER_PAGE));
   const paginatedArticles = useMemo(() => {
-    return filteredArticles.slice(
-      (currentPage - 1) * ARTICLES_PER_PAGE,
-      currentPage * ARTICLES_PER_PAGE
-    );
+    return filteredArticles.slice((currentPage - 1) * ARTICLES_PER_PAGE, currentPage * ARTICLES_PER_PAGE);
   }, [filteredArticles, currentPage]);
+
+  const resolvedArticleId = activeArticleId ?? locationArticleId;
+  const activeArticle = resolvedArticleId ? (articles.find((article) => article.id === resolvedArticleId) ?? null) : null;
+  const sanitizedContent = useMemo(() => (activeArticle ? sanitizeHtml(activeArticle.content) : ''), [activeArticle]);
+
+  const signalOptions: Array<{ key: ArticleSignal; label: string }> = [
+    { key: 'latest', label: 'Latest' },
+    { key: 'tech', label: 'Tech' },
+    { key: 'life', label: 'Life' },
+    { key: 'debate', label: 'Debate' },
+  ];
 
   const handleCategoryChange = (category: string | null) => {
     setSelectedCategory(category);
-    setCurrentPage(1); // Reset to first page
+    setCurrentPage(1);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
     <div className="relative min-h-screen w-full flex flex-col pt-32 pb-40 px-6 z-10">
-      
-      {/* Background Styling specifically for Journal */}
-      <div className="fixed inset-0 bg-background z-[-2]"></div>
-      
+      <div className="fixed inset-0 bg-background z-[-2]" />
+
       <AmbientVideo
         src={currentBg}
         className="fixed inset-0 w-full h-full object-cover z-[-1] opacity-60"
@@ -178,7 +95,6 @@ export default function Journal({ isZenMode }: JournalProps) {
       />
 
       <div className={`max-w-3xl mx-auto w-full relative transition-opacity duration-1000 ${isZenMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-        
         {!activeArticle ? (
           <div className="animate-[fade-rise_0.6s_ease-out]">
             <header className="mb-16">
@@ -186,28 +102,47 @@ export default function Journal({ isZenMode }: JournalProps) {
                 The Journal.
               </h1>
               <p className="text-muted-foreground text-lg leading-relaxed max-w-xl mb-12">
-                Thoughts, reflections, and deep dives from txnam.net. Read in silence.
+                A rolling archive of up to 100 pieces from Spiderum and txnam. Read in silence.
               </p>
 
-              {/* Category Filter */}
+              <div className="flex flex-wrap gap-3 mb-8">
+                {signalOptions.map((signal) => (
+                  <button
+                    key={signal.key}
+                    onClick={() => {
+                      setSelectedSignal(signal.key);
+                      setSelectedCategory(null);
+                      setCurrentPage(1);
+                    }}
+                    className={`px-5 py-2 rounded-full text-sm transition-all duration-300 ${
+                      selectedSignal === signal.key
+                        ? 'bg-foreground text-background'
+                        : 'liquid-glass text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {signal.label}
+                  </button>
+                ))}
+              </div>
+
               <div className="flex flex-wrap gap-3 mb-16">
                 <button
                   onClick={() => handleCategoryChange(null)}
                   className={`px-5 py-2 rounded-full text-sm transition-all duration-300 ${
-                    selectedCategory === null 
-                      ? 'bg-foreground text-background' 
+                    selectedCategory === null
+                      ? 'bg-foreground text-background'
                       : 'liquid-glass text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   All
                 </button>
-                {allCategories.map(category => (
+                {allCategories.map((category) => (
                   <button
                     key={category}
                     onClick={() => handleCategoryChange(category)}
                     className={`px-5 py-2 rounded-full text-sm transition-all duration-300 ${
-                      selectedCategory === category 
-                        ? 'bg-foreground text-background' 
+                      selectedCategory === category
+                        ? 'bg-foreground text-background'
                         : 'liquid-glass text-muted-foreground hover:text-foreground'
                     }`}
                   >
@@ -217,52 +152,72 @@ export default function Journal({ isZenMode }: JournalProps) {
               </div>
             </header>
 
-            <div className="space-y-12">
-              {paginatedArticles.map((article, idx) => (
-                <article 
-                  key={article.id} 
-                  className={`group cursor-pointer border-b border-border/40 pb-12 animate-[fade-rise_0.6s_ease-out]`}
-                  style={{ animationDelay: `${(idx % 10) * 0.1}s`, animationFillMode: 'both' }}
-                  onClick={() => {
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                    setActiveArticleId(article.id);
-                    setIgnoreLocationState(true);
-                  }}
-                >
-                  <div className="flex items-center gap-4 text-xs text-muted-foreground font-mono mb-4">
-                    <span className="flex items-center gap-1"><Calendar size={12} /> {article.date}</span>
-                    <span className="flex items-center gap-1"><Clock size={12} /> {article.readTime}</span>
+            {isLoading && (
+              <div className="space-y-6">
+                {Array.from({ length: 4 }).map((_, idx) => (
+                  <div key={idx} className="border-b border-border/40 pb-12 animate-pulse">
+                    <div className="h-4 w-40 bg-white/10 rounded mb-4" />
+                    <div className="h-10 w-3/4 bg-white/10 rounded mb-4" />
+                    <div className="h-4 w-full bg-white/10 rounded mb-3" />
+                    <div className="h-4 w-2/3 bg-white/10 rounded" />
                   </div>
-                  
-                  <h2 className="text-3xl md:text-4xl text-foreground mb-4 group-hover:text-primary/80 transition-colors" style={{ fontFamily: "'Lora', serif" }}>
-                    {article.title}
-                  </h2>
-                  
-                  <p className="text-muted-foreground text-base leading-relaxed mb-6">
-                    {article.excerpt}
-                  </p>
-                  
-                  <div className="flex flex-wrap gap-2">
-                    {article.tags && article.tags.map(tag => (
-                      <span key={tag} className="text-xs px-3 py-1 rounded-full bg-white/5 text-muted-foreground">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </article>
-              ))}
+                ))}
+              </div>
+            )}
 
-              {filteredArticles.length === 0 && (
-                <p className="text-muted-foreground italic text-center py-12">No articles found in this category.</p>
-              )}
-            </div>
+            {!isLoading && error && (
+              <p className="text-muted-foreground italic py-12">
+                Could not load the article archive right now.
+              </p>
+            )}
 
-            {/* Pagination Controls */}
-            {totalPages > 1 && (
+            {!isLoading && !error && (
+              <div className="space-y-12">
+                {paginatedArticles.map((article, idx) => (
+                  <article
+                    key={article.id}
+                    className="group cursor-pointer border-b border-border/40 pb-12 animate-[fade-rise_0.6s_ease-out]"
+                    style={{ animationDelay: `${(idx % 10) * 0.1}s`, animationFillMode: 'both' }}
+                    onClick={() => {
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                      setActiveArticleId(article.id);
+                      setIgnoreLocationState(true);
+                    }}
+                  >
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground font-mono mb-4">
+                      <span className="flex items-center gap-1"><Calendar size={12} /> {article.date}</span>
+                      <span className="flex items-center gap-1"><Clock size={12} /> {article.readTime}</span>
+                    </div>
+
+                    <h2 className="text-3xl md:text-4xl text-foreground mb-4 group-hover:text-primary/80 transition-colors" style={{ fontFamily: "'Lora', serif" }}>
+                      {article.title}
+                    </h2>
+
+                    <p className="text-muted-foreground text-base leading-relaxed mb-6">
+                      {article.excerpt}
+                    </p>
+
+                    <div className="flex flex-wrap gap-2">
+                      {article.tags?.map((tag) => (
+                        <span key={tag} className="text-xs px-3 py-1 rounded-full bg-white/5 text-muted-foreground">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </article>
+                ))}
+
+                {filteredArticles.length === 0 && (
+                  <p className="text-muted-foreground italic text-center py-12">No articles found in this lane.</p>
+                )}
+              </div>
+            )}
+
+            {!isLoading && !error && totalPages > 1 && (
               <div className="flex items-center justify-center gap-4 mt-20">
                 <button
                   onClick={() => {
-                    setCurrentPage(p => Math.max(1, p - 1));
+                    setCurrentPage((page) => Math.max(1, page - 1));
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
                   disabled={currentPage === 1}
@@ -270,14 +225,14 @@ export default function Journal({ isZenMode }: JournalProps) {
                 >
                   <ChevronLeft size={20} />
                 </button>
-                
+
                 <span className="text-muted-foreground font-mono text-sm">
                   {currentPage} / {totalPages}
                 </span>
 
                 <button
                   onClick={() => {
-                    setCurrentPage(p => Math.min(totalPages, p + 1));
+                    setCurrentPage((page) => Math.min(totalPages, page + 1));
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
                   disabled={currentPage === totalPages}
@@ -287,10 +242,16 @@ export default function Journal({ isZenMode }: JournalProps) {
                 </button>
               </div>
             )}
+
+            {!isLoading && !error && (
+              <p className="text-xs text-muted-foreground font-mono mt-8 text-center">
+                Archive capped at 100 articles. 10 pages max, 10 posts per page.
+              </p>
+            )}
           </div>
         ) : (
           <article className="animate-[fade-rise_0.6s_ease-out]">
-            <button 
+            <button
               onClick={() => {
                 setActiveArticleId(null);
                 setIgnoreLocationState(true);
@@ -305,18 +266,20 @@ export default function Journal({ isZenMode }: JournalProps) {
               <h1 className="text-5xl md:text-7xl text-foreground mb-8 leading-[1.1]" style={{ fontFamily: "'Lora', serif" }}>
                 {activeArticle.title}
               </h1>
-              
+
               <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground font-mono border-y border-border/40 py-6">
                 <span className="flex items-center gap-2"><Calendar size={14} /> {activeArticle.date}</span>
                 <span className="flex items-center gap-2"><Clock size={14} /> {activeArticle.readTime}</span>
                 {activeArticle.link && (
-                   <a href={activeArticle.link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-foreground transition-colors"><BookOpen size={14} /> Original Source</a>
+                  <a href={activeArticle.link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-foreground transition-colors">
+                    <BookOpen size={14} /> Original Source
+                  </a>
                 )}
               </div>
             </header>
 
-            <div 
-              className="prose prose-invert prose-lg max-w-none 
+            <div
+              className="prose prose-invert prose-lg max-w-none
               prose-p:text-muted-foreground prose-p:leading-relaxed prose-p:mb-8
               prose-headings:text-foreground prose-headings:font-normal prose-headings:mt-12 prose-headings:mb-6
               [&>h3]:text-3xl [&>h3]:font-serif
@@ -325,24 +288,23 @@ export default function Journal({ isZenMode }: JournalProps) {
               selection:bg-foreground selection:text-background"
               dangerouslySetInnerHTML={{ __html: sanitizedContent }}
             />
-            
+
             <div className="mt-20 pt-8 border-t border-border/40 flex justify-between items-center">
-               <p className="text-muted-foreground italic font-serif text-xl">"End of transmission."</p>
-               <button 
-                  onClick={() => {
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                    setActiveArticleId(null);
-                    setIgnoreLocationState(true);
-                    navigate(location.pathname, { replace: true, state: null });
-                  }}
-                  className="liquid-glass rounded-full px-6 py-2 text-sm text-foreground hover:scale-[1.03] cursor-pointer"
-                >
-                  Return
-                </button>
+              <p className="text-muted-foreground italic font-serif text-xl">"End of transmission."</p>
+              <button
+                onClick={() => {
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                  setActiveArticleId(null);
+                  setIgnoreLocationState(true);
+                  navigate(location.pathname, { replace: true, state: null });
+                }}
+                className="liquid-glass rounded-full px-6 py-2 text-sm text-foreground hover:scale-[1.03] cursor-pointer"
+              >
+                Return
+              </button>
             </div>
           </article>
         )}
-
       </div>
     </div>
   );
