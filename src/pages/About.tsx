@@ -18,16 +18,16 @@ interface AboutProps {
 
 const brotherhoodPillars = [
   {
-    title: '5 anh em trí cốt',
-    body: 'Savagers là một nhóm gồm năm anh em thân thiết. Mỗi người đi một nhịp, làm một nghề, mang một góc nhìn khác nhau, nhưng cùng giữ chung một tinh thần: sống có kỷ luật, có chiều sâu, và không để mình trôi theo đám đông.'
+    title: '5 người, một hướng đi',
+    body: 'Savagers là một nhóm gồm 5 anh em cùng đi trên con đường phát triển bản thân, sự nghiệp và tư duy sống. Mỗi người có một thế mạnh riêng, nhưng cùng giữ chung tinh thần học hỏi, làm việc nghiêm túc và không ngừng nâng cấp chính mình.'
   },
   {
     title: 'Hình thành từ nhu cầu thật',
-    body: 'Trang web này ra đời từ những cuộc trò chuyện đêm muộn, từ nhạc mở nhỏ trong tai nghe, từ nhu cầu cần một nơi đủ yên để đọc, nghĩ, và sắp xếp lại đầu óc giữa quá nhiều nhiễu động.'
+    body: 'Trang web này ra đời từ một nhu cầu rất thực: cần một nơi đủ yên để đọc, nghe, suy nghĩ và giữ nhịp giữa quá nhiều nhiễu động trên internet. Nó bắt đầu từ những thứ bọn mình dùng mỗi ngày, rồi dần trở thành một không gian chung.'
   },
   {
-    title: 'Thứ web này muốn mang lại',
-    body: 'Savagers không cố giữ người dùng bằng thông báo, feed vô tận hay mẹo gây nghiện. Nó mang lại một không gian để nghe, đọc, lắng lại, rồi quay về công việc và cuộc sống với đầu óc tỉnh hơn.'
+    title: 'Điều web này muốn mang lại',
+    body: 'Savagers không cố giữ người dùng bằng feed vô tận hay những cú kéo chú ý. Nó muốn mang lại một nhịp chậm hơn, một góc nhìn sâu hơn và một trạng thái tỉnh hơn để quay lại với công việc, cuộc sống và hành trình dài của mỗi người.'
   }
 ];
 
@@ -62,17 +62,17 @@ export default function About({ onAddNote, isZenMode }: AboutProps) {
               Savagers.
             </h1>
             <p className="text-muted-foreground text-xl md:text-2xl leading-relaxed max-w-3xl mx-auto">
-              Một góc yên tĩnh được dựng lên bởi năm anh em trí cốt, dành cho những người vẫn muốn phát triển bản thân, sự nghiệp và chiều sâu nội tâm mà không phải sống trong ồn ào.
+              Một góc yên tĩnh được dựng lên bởi 5 anh em cùng đi trên con đường phát triển bản thân, sự nghiệp và chiều sâu nội tâm mà không phải sống trong ồn ào.
             </p>
           </header>
 
           <div className="grid grid-cols-1 md:grid-cols-[1.15fr_0.85fr] gap-16 md:gap-20 items-start mb-28">
             <div className="space-y-7 text-lg text-muted-foreground leading-relaxed">
               <p>
-                Savagers bắt đầu không phải như một dự án truyền thông, mà như một lời nhắc giữa anh em với nhau: phải xây được một nền sống tử tế, có hướng đi, có năng lực làm việc, có khả năng tự đứng vững trước những giai đoạn khó khăn.
+                Savagers bắt đầu không phải như một dự án truyền thông, mà như một lời nhắc giữa những người cùng chí hướng: phải xây được một nền sống tử tế, có hướng đi rõ ràng, có năng lực làm việc và có khả năng tự đứng vững trước những giai đoạn khó khăn.
               </p>
               <p>
-                Cả nhóm có năm thành viên nam, xem nhau như anh em ruột thịt. Mỗi người mang vào đây một phần chất riêng: người nghiêng về công nghệ, người giỏi quan sát cuộc sống, người mê âm nhạc, người sống rất kỷ luật, người lại lì và bền trong hành trình phát triển bản thân. Từ đó, Savagers không nói bằng một giọng duy nhất, mà bằng một tinh thần chung.
+                Nhóm có 5 thành viên nam. Mỗi người mang vào đây một phần chất riêng: người nghiêng về công nghệ, người quan sát cuộc sống, người giữ nhịp kỷ luật, người thích đào sâu tư duy, người yêu âm nhạc và cảm xúc. Savagers vì thế không nói bằng một giọng duy nhất, mà bằng một tinh thần chung.
               </p>
               <p>
                 Trang web này được hình thành để gom lại những thứ bọn mình thật sự dùng mỗi ngày: nhạc để giữ nhịp, bài viết để mở góc nhìn, và một không gian có chủ đích để tránh bị cuốn vào tốc độ hỗn loạn của internet. Nó không phải nơi để gây nghiện. Nó là nơi để bạn lấy lại trục của mình.

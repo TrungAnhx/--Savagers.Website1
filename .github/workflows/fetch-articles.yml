@@ -1,4 +1,4 @@
-name: Fetch Spiderum Articles
+name: Fetch Articles
 
 on:
   schedule:
@@ -23,10 +23,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run Spiderum Fetch Script
+      - name: Run Article Fetch Script
         env:
-          SPIDERUM_SOURCE_URLS: https://spiderum.com/danh-muc/khoa-hoc-cong-nghe,https://spiderum.com/danh-muc/quan-diem-tranh-luan,https://spiderum.com/danh-muc/life-style,https://spiderum.com/nguoi-dung/spiderum
-          SPIDERUM_MAX_ARTICLES: 24
+          SPIDERUM_SOURCE_URLS: https://spiderum.com/nguoi-dung/spiderum,https://spiderum.com/danh-muc/khoa-hoc-cong-nghe,https://spiderum.com/danh-muc/quan-diem-tranh-luan,https://spiderum.com/danh-muc/life-style
+          SPIDERUM_MAX_ARTICLES: 28
+          TXNAM_SOURCE_URL: https://txnam.net
+          TXNAM_MAX_ARTICLES: 10
         run: node scripts/fetch-spiderum.cjs
 
       - name: Commit and Push changes
@@ -34,5 +36,5 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action Bot"
           git add src/data/articles.json
-          git commit -m "Auto-update: Fetch Spiderum articles" || echo "No changes to commit"
+          git commit -m "Auto-update: Fetch articles" || echo "No changes to commit"
           git push

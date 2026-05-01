@@ -2,13 +2,16 @@ const fs = require('fs');
 const cheerio = require('cheerio');
 
 const BASE_URL = 'https://spiderum.com';
+const TXNAM_BASE_URL = 'https://txnam.net';
 const SOURCE_URLS = (process.env.SPIDERUM_SOURCE_URLS ||
-  'https://spiderum.com/danh-muc/khoa-hoc-cong-nghe,https://spiderum.com/danh-muc/quan-diem-tranh-luan,https://spiderum.com/danh-muc/life-style,https://spiderum.com/nguoi-dung/spiderum')
+  'https://spiderum.com/nguoi-dung/spiderum,https://spiderum.com/danh-muc/khoa-hoc-cong-nghe,https://spiderum.com/danh-muc/quan-diem-tranh-luan,https://spiderum.com/danh-muc/life-style')
   .split(',')
   .map((url) => url.trim())
   .filter(Boolean);
+const TXNAM_SOURCE_URL = process.env.TXNAM_SOURCE_URL || 'https://txnam.net';
 const OUTPUT_PATH = './src/data/articles.json';
-const MAX_ARTICLES = Number.parseInt(process.env.SPIDERUM_MAX_ARTICLES || '24', 10);
+const MAX_ARTICLES = Number.parseInt(process.env.SPIDERUM_MAX_ARTICLES || '28', 10);
+const TXNAM_MAX_ARTICLES = Number.parseInt(process.env.TXNAM_MAX_ARTICLES || '10', 10);
 const PREFERRED_KEYWORDS = [
   'ai',
   'công nghệ',
@@ -37,48 +40,7 @@ const PREFERRED_KEYWORDS = [
   'người trẻ',
   'nguoi tre'
 ];
-const PREFERRED_PATTERNS = [
-  /\bai\b/,
-  /\bit\b/,
-  /\bcong nghe\b/,
-  /\bkhoa hoc\b/,
-  /\blap trinh\b/,
-  /\bphan mem\b/,
-  /\bdeveloper\b/,
-  /\bprogramming\b/,
-  /\bsoftware\b/,
-  /\bcoding\b/,
-  /\bbackend\b/,
-  /\bfront end\b/,
-  /\bfrontend\b/,
-  /\bfullstack\b/,
-  /\bdevops\b/,
-  /\bcloud\b/,
-  /\bcybersecurity\b/,
-  /\bsecurity\b/,
-  /\bdata\b/,
-  /\bweb3\b/,
-  /\bdu lieu\b/,
-  /\bmachine learning\b/,
-  /\bdeep learning\b/,
-  /\bllm\b/,
-  /\bchatgpt\b/,
-  /\bgame\b/,
-  /\bcuoc song\b/,
-  /\bquan diem\b/,
-  /\btranh luan\b/,
-  /\blife style\b/,
-  /\blifestyle\b/,
-  /\bphat trien ban than\b/,
-  /\bnguoi tre\b/,
-  /\bcareer\b/,
-  /\bnghe nghiep\b/,
-];
 const EXCLUDED_KEYWORDS = [
-  'tài chính',
-  'tai chinh',
-  'sách',
-  'sach',
   'sự kiện',
   'su kien',
   'hackathon',
@@ -87,14 +49,10 @@ const EXCLUDED_KEYWORDS = [
   'đồng hành',
   'dong hanh',
   'homentor',
-  'tiền không tệ',
-  'tien khong te',
   'mở bán sách',
   'mo ban sach',
   'tuyển dụng',
-  'tuyen dung',
-  '100 triệu',
-  '100 trieu'
+  'tuyen dung'
 ];
 const EXCLUDED_PATTERNS = EXCLUDED_KEYWORDS.map((keyword) => new RegExp(`\\b${normalizeKeyword(keyword).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`));
 const STRONG_TECH_PATTERNS = [
@@ -330,12 +288,9 @@ function extractTags(html) {
   return tags.length > 0 ? tags : ['Spiderum'];
 }
 
-function isPreferredArticle(article) {
+function isAllowedArticle(article) {
   const haystack = normalizeKeyword([article.title, article.excerpt, ...(article.tags || [])].join(' '));
-  if (EXCLUDED_PATTERNS.some((pattern) => pattern.test(haystack))) {
-    return false;
-  }
-  return PREFERRED_PATTERNS.some((pattern) => pattern.test(haystack));
+  return !EXCLUDED_PATTERNS.some((pattern) => pattern.test(haystack));
 }
 
 function articlePriorityScore(article) {
@@ -348,7 +303,99 @@ function articlePriorityScore(article) {
   );
 }
 
-async function main() {
+function normalizeTxnamImages($root) {
+  $root.find('img').each((_, image) => {
+    const $image = $root.find(image);
+    const src = $image.attr('data-src') || $image.attr('src');
+    if (!src) return;
+    $image.attr('src', new URL(src, TXNAM_BASE_URL).toString());
+    $image.removeAttr('srcset');
+    $image.attr('loading', 'lazy');
+    $image.attr('decoding', 'async');
+  });
+}
+
+function extractTxnamListEntries(html) {
+  const $ = cheerio.load(html);
+  const entries = [];
+  const seen = new Set();
+
+  $('div.post').each((_, post) => {
+    const $post = $(post);
+    const titleLink = $post.find('h2 a').first();
+    const href = titleLink.attr('href');
+    const title = normalizeWhitespace(titleLink.text());
+    if (!href || !title) return;
+
+    const absoluteUrl = new URL(href, TXNAM_BASE_URL).toString();
+    if (seen.has(absoluteUrl)) return;
+
+    const date = normalizeWhitespace($post.find('.post-date').first().text());
+    const excerpt = normalizeWhitespace(
+      $post
+        .clone()
+        .find('h2, .post-date, .post-category, .post-comment, .readmore')
+        .remove()
+        .end()
+        .text()
+    );
+    const category = normalizeWhitespace($post.find('.post-category a').first().text());
+
+    entries.push({
+      id: slugFromUrl(absoluteUrl),
+      title,
+      link: absoluteUrl,
+      date: date ? parseDate(date) : '',
+      excerpt,
+      category,
+    });
+    seen.add(absoluteUrl);
+  });
+
+  return entries.slice(0, TXNAM_MAX_ARTICLES);
+}
+
+function extractTxnamArticleContent(html, fallbackTitle) {
+  const $ = cheerio.load(html);
+  const title = normalizeWhitespace($('.post h1').first().text()) || fallbackTitle;
+  const body = $('.post-body').first().clone();
+  normalizeTxnamImages(body);
+
+  const content = body.html()?.trim() || '';
+  const excerpt =
+    normalizeWhitespace(body.find('p').first().text()) ||
+    normalizeWhitespace($('meta[name="Description"]').attr('content') || '');
+  const tags = [];
+
+  $('.post .post-category a, meta[name="Keywords"]').each((_, element) => {
+    if (element.tagName === 'meta') {
+      const keywords = ($(element).attr('content') || '')
+        .split(',')
+        .map((keyword) => normalizeWhitespace(keyword))
+        .filter(Boolean);
+      keywords.forEach((keyword) => {
+        if (!tags.includes(keyword) && tags.length < 5) tags.push(keyword);
+      });
+      return;
+    }
+
+    const text = normalizeWhitespace($(element).text());
+    if (text && !tags.includes(text) && tags.length < 5) tags.push(text);
+  });
+
+  const plainText = normalizeWhitespace(body.text());
+  const wordCount = plainText.split(' ').filter(Boolean).length;
+
+  return {
+    title,
+    content,
+    excerpt,
+    tags: tags.length > 0 ? tags : ['txnam.net'],
+    readTime: `${Math.max(3, Math.ceil(wordCount / 200))} min read`,
+  };
+}
+
+async function fetchSpiderumArticles() {
   const dedupedEntries = new Map();
   for (const sourceUrl of SOURCE_URLS) {
     const listHtml = await fetchHtml(sourceUrl);
@@ -360,9 +407,8 @@ async function main() {
       }
     });
   }
-  const entries = Array.from(dedupedEntries.values())
-    .sort((a, b) => articlePriorityScore(b) - articlePriorityScore(a))
-    .slice(0, MAX_ARTICLES);
+
+  const entries = Array.from(dedupedEntries.values()).slice(0, MAX_ARTICLES);
   if (entries.length === 0) {
     throw new Error('No Spiderum articles found from source page.');
   }
@@ -383,36 +429,57 @@ async function main() {
         content: extracted.content,
         tags,
         link: entry.link,
+        source: 'spiderum',
       });
     } catch (error) {
       console.error(`Failed to fetch article ${entry.link}: ${error.message}`);
     }
   }
 
-  if (articles.length === 0) {
-    throw new Error('Spiderum fetch completed with zero valid articles.');
+  const allowedArticles = articles.filter(isAllowedArticle);
+  return (allowedArticles.length > 0 ? allowedArticles : articles)
+    .sort((a, b) => articlePriorityScore(b) - articlePriorityScore(a))
+    .slice(0, MAX_ARTICLES);
+}
+
+async function fetchTxnamArticles() {
+  const homepageHtml = await fetchHtml(TXNAM_SOURCE_URL);
+  const entries = extractTxnamListEntries(homepageHtml);
+  if (entries.length === 0) {
+    throw new Error('No txnam articles found on the homepage.');
   }
 
-  let existingArticles = [];
-  try {
-    existingArticles = JSON.parse(fs.readFileSync(OUTPUT_PATH, 'utf8'));
-  } catch {
-    existingArticles = [];
+  const articles = [];
+  for (const entry of entries) {
+    console.log(`Fetching txnam article: ${entry.title}`);
+    try {
+      const articleHtml = await fetchHtml(entry.link);
+      const extracted = extractTxnamArticleContent(articleHtml, entry.title);
+      articles.push({
+        id: entry.id,
+        title: extracted.title,
+        date: entry.date,
+        readTime: extracted.readTime,
+        excerpt: (entry.excerpt || extracted.excerpt || '').slice(0, 220).trim() + ((entry.excerpt || extracted.excerpt || '').length > 220 ? '...' : ''),
+        content: extracted.content,
+        tags: extracted.tags,
+        link: entry.link,
+        source: 'txnam',
+      });
+    } catch (error) {
+      console.error(`Failed to fetch txnam article ${entry.link}: ${error.message}`);
+    }
   }
 
-  const preservedArticles = existingArticles.filter((article) => {
-    if (!article || typeof article !== 'object') return false;
-    return typeof article.link === 'string' && !article.link.includes('spiderum.com');
-  });
+  return articles;
+}
 
-  const selectedArticles = articles
-    .filter(isPreferredArticle)
-    .sort((a, b) => articlePriorityScore(b) - articlePriorityScore(a));
-  const fallbackArticles = [...articles].sort((a, b) => articlePriorityScore(b) - articlePriorityScore(a));
-  const finalSpiderumArticles = (selectedArticles.length > 0 ? selectedArticles : fallbackArticles).slice(0, MAX_ARTICLES);
-  const mergedArticles = [...finalSpiderumArticles, ...preservedArticles];
+async function main() {
+  const spiderumArticles = await fetchSpiderumArticles();
+  const txnamArticles = await fetchTxnamArticles();
+  const mergedArticles = [...spiderumArticles, ...txnamArticles];
   fs.writeFileSync(OUTPUT_PATH, JSON.stringify(mergedArticles, null, 2) + '\n', 'utf8');
-  console.log(`Saved ${finalSpiderumArticles.length} Spiderum articles and preserved ${preservedArticles.length} existing non-Spiderum articles.`);
+  console.log(`Saved ${spiderumArticles.length} Spiderum articles and ${txnamArticles.length} txnam articles.`);
 }
 
 main().catch((error) => {
