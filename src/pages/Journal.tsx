@@ -17,6 +17,48 @@ interface Article {
 }
 
 const articles: Article[] = articlesData as Article[];
+const PRIORITY_CATEGORY_LABELS = ['AI', 'Lập Trình', 'Công nghệ', 'Quan điểm - Tranh luận', 'Cuộc sống'];
+const TECH_PRIORITY_PATTERNS = [
+  /\bai\b/,
+  /\bit\b/,
+  /\bcode\b/,
+  /\blập trình\b/,
+  /\blap trinh\b/,
+  /\bcông nghệ\b/,
+  /\bcong nghe\b/,
+  /\bkhoa học\b/,
+  /\bkhoa hoc\b/,
+  /\bphần mềm\b/,
+  /\bphan mem\b/,
+  /\bdeveloper\b/,
+  /\bprogramming\b/,
+  /\bsoftware\b/,
+];
+const YOUTH_PRIORITY_PATTERNS = [
+  /\bquan điểm\b/,
+  /\bquan diem\b/,
+  /\btranh luận\b/,
+  /\btranh luan\b/,
+  /\bcuộc sống\b/,
+  /\bcuoc song\b/,
+  /\blife\b/,
+  /\bminimalism\b/,
+  /\burban life\b/,
+];
+
+function normalizeTag(value: string) {
+  return value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
+function articlePriorityScore(article: Article) {
+  const haystack = normalizeTag([article.title, ...(article.tags || [])].join(' '));
+  if (TECH_PRIORITY_PATTERNS.some((pattern) => pattern.test(haystack))) return 3;
+  if (YOUTH_PRIORITY_PATTERNS.some((pattern) => pattern.test(haystack))) return 2;
+  return 0;
+}
 
 // Calculate category frequencies and take the top 5
 const categoryCounts = articles.flatMap(a => a.tags || []).reduce((acc, tag) => {
@@ -24,11 +66,16 @@ const categoryCounts = articles.flatMap(a => a.tags || []).reduce((acc, tag) => 
   return acc;
 }, {} as Record<string, number>);
 
-const allCategories = Object.entries(categoryCounts)
+const allCategories = [
+  ...PRIORITY_CATEGORY_LABELS.filter((label) =>
+    Object.keys(categoryCounts).some((tag) => normalizeTag(tag) === normalizeTag(label))
+  ),
+  ...Object.entries(categoryCounts)
   .sort((a, b) => b[1] - a[1])
-  .slice(0, 5)
+  .slice(0, 8)
   .map(e => e[0])
-  .sort();
+  .filter((tag) => !PRIORITY_CATEGORY_LABELS.some((label) => normalizeTag(label) === normalizeTag(tag)))
+].slice(0, 6);
 
 const ARTICLES_PER_PAGE = 10;
 
@@ -81,9 +128,10 @@ export default function Journal({ isZenMode }: JournalProps) {
   );
 
   const filteredArticles = useMemo(() => {
-    return selectedCategory 
+    const matchingArticles = selectedCategory 
       ? articles.filter(a => a.tags && a.tags.includes(selectedCategory))
       : articles;
+    return [...matchingArticles].sort((a, b) => articlePriorityScore(b) - articlePriorityScore(a));
   }, [selectedCategory]);
 
   const totalPages = Math.ceil(filteredArticles.length / ARTICLES_PER_PAGE);
