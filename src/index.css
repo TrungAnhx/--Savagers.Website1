@@ -16,7 +16,7 @@
     --accent-foreground: 0 0% 100%;
     --border: 0 0% 18%;
     --input: 0 0% 18%;
-    --font-display: 'Instrument Serif', serif;
+    --font-display: 'Noto Serif Display', serif;
     --font-body: 'Inter', sans-serif;
   }
   
@@ -88,3 +88,26 @@
 .animate-fade-rise-delay { animation: fade-rise 0.8s ease-out 0.2s both; }
 .animate-fade-rise-delay-2 { animation: fade-rise 0.8s ease-out 0.4s both; }
 .animate-fade-rise-center { animation: fade-rise-center 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+.article-content {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.article-content :where(a, p, li, blockquote, figcaption, code, pre) {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.article-content :where(img, video, iframe, embed, object, table) {
+  max-width: 100%;
+}
+
+.article-content :where(img, video, iframe, embed, object) {
+  height: auto;
+}
+
+.article-content :where(pre, table) {
+  overflow-x: auto;
+}

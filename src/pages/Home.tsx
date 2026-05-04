@@ -28,7 +28,7 @@ export default function Home({ isPlaying, togglePlay, isZenMode }: HomeProps) {
         <section className="relative z-10 flex flex-col items-center justify-center text-center px-6 min-h-screen">
         <h1 
           className="animate-fade-rise text-5xl sm:text-7xl md:text-8xl leading-[0.95] tracking-[-2.46px] max-w-7xl font-normal text-foreground"
-          style={{ fontFamily: "'Instrument Serif', serif" }}
+          style={{ fontFamily: "'Noto Serif Display', serif" }}
         >
           Where <em className="not-italic text-muted-foreground">dreams</em> rise <em className="not-italic text-muted-foreground">through the silence.</em>
         </h1>
@@ -56,7 +56,7 @@ export default function Home({ isPlaying, togglePlay, isZenMode }: HomeProps) {
         <div className="relative max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
           <div>
-            <h2 className="text-4xl md:text-6xl text-foreground mb-4" style={{ fontFamily: "'Instrument Serif', serif" }}>
+            <h2 className="text-4xl md:text-6xl text-foreground mb-4" style={{ fontFamily: "'Noto Serif Display', serif" }}>
               Featured Today.
             </h2>
             <p className="text-muted-foreground text-lg max-w-xl">
@@ -93,7 +93,7 @@ export default function Home({ isPlaying, togglePlay, isZenMode }: HomeProps) {
                 <span className="flex items-center gap-1"><Clock size={12} /> {entry.article.readTime}</span>
               </div>
               
-              <h3 className="text-2xl text-foreground mb-4 group-hover:text-primary/80 transition-colors flex-1" style={{ fontFamily: "'Instrument Serif', serif" }}>
+              <h3 className="text-2xl text-foreground mb-4 group-hover:text-primary/80 transition-colors flex-1" style={{ fontFamily: "'Noto Serif Display', serif" }}>
                 {entry.article.title}
               </h3>
               

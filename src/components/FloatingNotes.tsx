@@ -58,7 +58,7 @@ export default function FloatingNotes({ notes }: { notes: string[] }) {
             exit={{ opacity: 0 }}
             transition={{ duration: note.duration, ease: 'linear' }}
             className="absolute whitespace-nowrap text-white/45 font-serif text-xl tracking-wide drop-shadow-lg"
-            style={{ top: note.top, fontFamily: "'Instrument Serif', serif" }}
+            style={{ top: note.top, fontFamily: "'Noto Serif Display', serif" }}
           >
             "{note.text}"
           </motion.div>

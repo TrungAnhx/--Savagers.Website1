@@ -4,7 +4,7 @@ import { BookOpen, Calendar, ChevronLeft, ChevronRight, Clock } from 'lucide-rea
 import AmbientVideo from '../components/AmbientVideo';
 import { useArticleContent } from '../hooks/useArticleContent';
 import { useArticles } from '../hooks/useArticles';
-import { sanitizeHtml } from '../utils/sanitizeHtml';
+import { htmlHasReadableContent, sanitizeHtml } from '../utils/sanitizeHtml';
 import {
   ARTICLES_PER_PAGE,
   MAX_ARCHIVE_PAGES,
@@ -30,8 +30,6 @@ export default function Journal({ isZenMode }: JournalProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const { articles, isLoading, error } = useArticles();
-  const [activeArticleId, setActiveArticleId] = useState<string | null>(null);
-  const [ignoreLocationState, setIgnoreLocationState] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedSignal, setSelectedSignal] = useState<ArticleSignal>('latest');
   const [bgIndex, setBgIndex] = useState(() => Math.floor(Math.random() * backgroundVideos.length));
@@ -49,7 +47,7 @@ export default function Journal({ isZenMode }: JournalProps) {
     }, 100);
   }, [currentPage, selectedSignal]);
 
-  const locationArticleId = !ignoreLocationState && location.state && typeof location.state === 'object' && 'articleId' in location.state
+  const locationArticleId = location.state && typeof location.state === 'object' && 'articleId' in location.state
     ? (location.state as { articleId?: string }).articleId ?? null
     : null;
 
@@ -63,10 +61,10 @@ export default function Journal({ isZenMode }: JournalProps) {
     return filteredArticles.slice((currentPage - 1) * ARTICLES_PER_PAGE, currentPage * ARTICLES_PER_PAGE);
   }, [filteredArticles, currentPage]);
 
-  const resolvedArticleId = activeArticleId ?? locationArticleId;
-  const activeArticle = resolvedArticleId ? (articles.find((article) => article.id === resolvedArticleId) ?? null) : null;
+  const activeArticle = locationArticleId ? (articles.find((article) => article.id === locationArticleId) ?? null) : null;
   const { content: activeArticleContent, isLoading: isArticleContentLoading, error: articleContentError } = useArticleContent(activeArticle?.id ?? null);
   const sanitizedContent = useMemo(() => sanitizeHtml(activeArticleContent), [activeArticleContent]);
+  const hasReadableContent = useMemo(() => htmlHasReadableContent(sanitizedContent), [sanitizedContent]);
 
   const signalOptions: Array<{ key: ArticleSignal; label: string }> = [
     { key: 'latest', label: 'Mới nhất' },
@@ -89,7 +87,7 @@ export default function Journal({ isZenMode }: JournalProps) {
         {!activeArticle ? (
           <div className="animate-[fade-rise_0.6s_ease-out]">
             <header className="mb-16">
-              <h1 className="text-6xl md:text-8xl text-foreground mb-6" style={{ fontFamily: "'Instrument Serif', serif" }}>
+              <h1 className="text-6xl md:text-8xl text-foreground mb-6" style={{ fontFamily: "'Noto Serif Display', serif" }}>
                 The Journal.
               </h1>
               <p className="text-muted-foreground text-lg leading-relaxed max-w-xl mb-12">
@@ -144,8 +142,7 @@ export default function Journal({ isZenMode }: JournalProps) {
                     style={{ animationDelay: `${(idx % 10) * 0.1}s`, animationFillMode: 'both' }}
                     onClick={() => {
                       window.scrollTo({ top: 0, behavior: 'smooth' });
-                      setActiveArticleId(article.id);
-                      setIgnoreLocationState(true);
+                      navigate(location.pathname, { state: { articleId: article.id } });
                     }}
                   >
                     <div className="flex items-center gap-4 text-xs text-muted-foreground font-mono mb-4">
@@ -153,7 +150,7 @@ export default function Journal({ isZenMode }: JournalProps) {
                       <span className="flex items-center gap-1"><Clock size={12} /> {article.readTime}</span>
                     </div>
 
-                    <h2 className="text-3xl md:text-4xl text-foreground mb-4 group-hover:text-primary/80 transition-colors" style={{ fontFamily: "'Instrument Serif', serif" }}>
+                    <h2 className="text-3xl md:text-4xl text-foreground mb-4 group-hover:text-primary/80 transition-colors" style={{ fontFamily: "'Noto Serif Display', serif" }}>
                       {article.title}
                     </h2>
 
@@ -217,8 +214,8 @@ export default function Journal({ isZenMode }: JournalProps) {
           <article className="animate-[fade-rise_0.6s_ease-out]">
             <button
               onClick={() => {
-                setActiveArticleId(null);
-                setIgnoreLocationState(true);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                navigate(location.pathname, { replace: true, state: null });
               }}
               className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-12 group"
             >
@@ -227,7 +224,7 @@ export default function Journal({ isZenMode }: JournalProps) {
             </button>
 
             <header className="mb-16">
-              <h1 className="text-5xl md:text-7xl text-foreground mb-8 leading-[1.1]" style={{ fontFamily: "'Instrument Serif', serif" }}>
+              <h1 className="text-5xl md:text-7xl text-foreground mb-8 leading-[1.1]" style={{ fontFamily: "'Noto Serif Display', serif" }}>
                 {activeArticle.title}
               </h1>
 
@@ -257,12 +254,12 @@ export default function Journal({ isZenMode }: JournalProps) {
               </p>
             )}
 
-            {!isArticleContentLoading && !articleContentError && (
+            {!isArticleContentLoading && !articleContentError && hasReadableContent && (
               <div
-                className="prose prose-invert prose-lg max-w-none
+                className="article-content prose prose-invert prose-lg max-w-none
               prose-p:text-muted-foreground prose-p:leading-relaxed prose-p:mb-8
               prose-headings:text-foreground prose-headings:font-normal prose-headings:mt-12 prose-headings:mb-6
-              [&>h3]:text-3xl [&>h3]:font-serif
+              prose-headings:font-display [&>h3]:text-3xl
               prose-a:text-foreground prose-a:underline prose-a:underline-offset-4 hover:prose-a:text-primary
               prose-img:rounded-xl prose-img:shadow-2xl prose-img:mx-auto prose-img:my-12
               selection:bg-foreground selection:text-background"
@@ -270,13 +267,34 @@ export default function Journal({ isZenMode }: JournalProps) {
               />
             )}
 
+            {!isArticleContentLoading && !articleContentError && !hasReadableContent && (
+              <div className="article-content rounded-lg border border-border/40 bg-white/[0.03] px-6 py-7">
+                <p className="text-muted-foreground leading-relaxed mb-5">
+                  Nội dung đầy đủ của bài này chưa được lưu trong archive. Bạn vẫn có thể đọc phần tóm tắt hoặc mở nguồn gốc bên dưới.
+                </p>
+                {activeArticle.excerpt && (
+                  <p className="text-foreground/85 leading-relaxed mb-6">
+                    {activeArticle.excerpt}
+                  </p>
+                )}
+                {activeArticle.link && (
+                  <a
+                    href={activeArticle.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-sm text-foreground underline underline-offset-4 hover:text-primary"
+                  >
+                    <BookOpen size={14} /> Open original source
+                  </a>
+                )}
+              </div>
+            )}
+
             <div className="mt-20 pt-8 border-t border-border/40 flex justify-between items-center">
               <p className="text-muted-foreground italic font-serif text-xl">"End of transmission."</p>
               <button
                 onClick={() => {
                   window.scrollTo({ top: 0, behavior: 'smooth' });
-                  setActiveArticleId(null);
-                  setIgnoreLocationState(true);
                   navigate(location.pathname, { replace: true, state: null });
                 }}
                 className="liquid-glass rounded-full px-6 py-2 text-sm text-foreground hover:scale-[1.03] cursor-pointer"

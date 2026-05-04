@@ -35,3 +35,19 @@ export function sanitizeHtml(input: string): string {
 
   return template.innerHTML;
 }
+
+export function htmlHasReadableContent(input: string): boolean {
+  if (!input) return false;
+
+  const template = document.createElement('template');
+  template.innerHTML = input;
+
+  const text = template.content.textContent
+    ?.replace(/\u00a0/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (text) return true;
+
+  return Boolean(template.content.querySelector('img, video, audio, iframe, blockquote, pre, table'));
+}
