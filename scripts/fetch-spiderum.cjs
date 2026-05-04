@@ -100,6 +100,29 @@ function normalizeWhitespace(value) {
   return value.replace(/\s+/g, ' ').trim();
 }
 
+function hasReadableHtmlContent(html) {
+  return normalizeWhitespace(cheerio.load(html || '').text()).length > 0;
+}
+
+function findSpiderumLegacyContent($) {
+  const selectors = [
+    '.post-content .p-content',
+    '.post-container .p-content',
+    '.p-content',
+    '.post-content',
+  ];
+
+  for (const selector of selectors) {
+    const candidates = $(selector).toArray();
+    const candidate = candidates
+      .map((element) => $(element))
+      .find((element) => normalizeWhitespace(element.text()).length > 200);
+    if (candidate) return candidate.clone();
+  }
+
+  return null;
+}
+
 function slugFromUrl(url) {
   return url.split('/').filter(Boolean).pop() || url;
 }
@@ -283,9 +306,42 @@ function extractArticleContent(html, fallbackTitle) {
     }
   });
 
-  const content = blocks.join('');
+  let content = blocks.join('');
+  let fallbackBody = null;
+
+  if (!hasReadableHtmlContent(content)) {
+    fallbackBody = findSpiderumLegacyContent($);
+    if (!fallbackBody) fallbackBody = cheerio.load('<div></div>')('div');
+    fallbackBody.find('script, style, iframe, object, embed, link, meta').remove();
+    fallbackBody.find('.interaction-author, .interaction-post, .tags-wrapper, voter, bookmark, avatar, spiderum-icon').remove();
+    fallbackBody.find('img').each((_, image) => {
+      const imageEl = fallbackBody.find(image);
+      const src = imageEl.attr('data-src') || imageEl.attr('src');
+      if (!src) return;
+      imageEl.attr('src', new URL(src, BASE_URL).toString());
+      imageEl.removeAttr('srcset');
+      imageEl.removeAttr('sizes');
+      imageEl.attr('loading', 'lazy');
+      imageEl.attr('decoding', 'async');
+    });
+
+    fallbackBody.children('div').each((_, element) => {
+      const block = fallbackBody.find(element);
+      if (!normalizeWhitespace(block.text()) && block.find('img, figure, hr, ul, ol, blockquote').length === 0) {
+        block.remove();
+        return;
+      }
+      if (block.children('figure, img, ul, ol, blockquote, h1, h2, h3, h4, h5, h6, hr').length === 0) {
+        block.replaceWith(`<p>${block.html() || block.text()}</p>`);
+      }
+    });
+
+    content = fallbackBody.html()?.trim() || '';
+  }
+
   const excerpt =
     normalizeWhitespace(editor.find('.ce-paragraph').first().text()) ||
+    normalizeWhitespace(fallbackBody?.find('p, div').first().text() || '') ||
     normalizeWhitespace($('meta[name="description"]').attr('content') || '');
 
   const plainText = normalizeWhitespace(cheerio.load(content).text());

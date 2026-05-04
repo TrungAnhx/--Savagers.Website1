@@ -204,11 +204,6 @@ export default function Journal({ isZenMode }: JournalProps) {
               </div>
             )}
 
-            {!isLoading && !error && (
-              <p className="text-xs text-muted-foreground font-mono mt-8 text-center">
-                Archive capped at 100 articles. 10 pages max, 10 posts per page.
-              </p>
-            )}
           </div>
         ) : (
           <article className="animate-[fade-rise_0.6s_ease-out]">
