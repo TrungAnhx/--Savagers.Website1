@@ -1,15 +1,27 @@
 [
   {
-    "id": "P1-HIEU-DUNG-VE-AI-Nhung-cam-bay-tat-ca-nguoi-su-dung-phai-vuot-qua-APap2FyB64uy",
-    "title": "(P1) HIỂU ĐÚNG VỀ A.I: Những cạm bẫy tất cả người sử dụng phải vượt qua",
+    "id": "P2-HIEU-DUNG-VE-AI-Lam-viec-voi-AI-the-nao-de-khong-bi-dan-di-1nzpNc780tbc",
+    "title": "(P2) HIỂU ĐÚNG VỀ A.I: Làm việc với A.I thế nào để không bị đần đi?",
     "date": "",
-    "readTime": "17 min read",
-    "excerpt": "Trí tuệ nhân tạo thường được truyền thông quảng bá như một bước tiến vĩ đại tiếp theo của nhân loại. Chúng ta nghe rất nhiều về việc AI sẽ gia tăng năng suất lao động, thay thế hoàn toàn những công việc lặp đi lặp lại và...",
+    "readTime": "34 min read",
+    "excerpt": "Ở Phần 1, chúng ta đã cùng nhau bóc tách những ảo tưởng và chỉ ra những cạm bẫy mà bất kỳ ai khi mới sử dụng trí tuệ nhân tạo cũng phải vượt qua. AI không nên chỉ là một công cụ đơn thuần mà nên là một người cộng sự đắc...",
     "tags": [
-      "Công nghệ mới",
       "Khoa học - Công nghệ"
     ],
-    "link": "https://spiderum.com/bai-dang/P1-HIEU-DUNG-VE-AI-Nhung-cam-bay-tat-ca-nguoi-su-dung-phai-vuot-qua-APap2FyB64uy",
+    "link": "https://spiderum.com/bai-dang/P2-HIEU-DUNG-VE-AI-Lam-viec-voi-AI-the-nao-de-khong-bi-dan-di-1nzpNc780tbc",
+    "source": "spiderum"
+  },
+  {
+    "id": "Tap-choi-data-driven-nhu-the-nao-7qo",
+    "title": "Tập chơi \"data-driven\" như thế nào?",
+    "date": "",
+    "readTime": "9 min read",
+    "excerpt": "Bạn có thể nghe thấy mọi người nói rất nhiều về big data, data-driven, ra quyết định dựa trên số liệu… Bạn cảm thấy đó dường như là...",
+    "tags": [
+      "Computer Science",
+      "Khoa học - Công nghệ"
+    ],
+    "link": "https://spiderum.com/bai-dang/Tap-choi-data-driven-nhu-the-nao-7qo",
     "source": "spiderum"
   },
   {
@@ -37,19 +49,6 @@
     "source": "spiderum"
   },
   {
-    "id": "CON-MEO-CUA-SCHRODINGER-CO-THE-KHIEN-BAN-KHONG-THE-NHIN-THE-GIOI-NAY-THEO-CACH-CU-DUOC-NUA-rbu",
-    "title": "CON MÈO CỦA SCHRODINGER CÓ THỂ KHIẾN BẠN KHÔNG THỂ NHÌN THẾ GIỚI NÀY THEO CÁCH CŨ ĐƯỢC NỮA.",
-    "date": "",
-    "readTime": "32 min read",
-    "excerpt": "Ảnh: Monster Box.",
-    "tags": [
-      "Vật lý",
-      "Khoa học - Công nghệ"
-    ],
-    "link": "https://spiderum.com/bai-dang/CON-MEO-CUA-SCHRODINGER-CO-THE-KHIEN-BAN-KHONG-THE-NHIN-THE-GIOI-NAY-THEO-CACH-CU-DUOC-NUA-rbu",
-    "source": "spiderum"
-  },
-  {
     "id": "Cam-100-trieu-di-mua-nha-Ha-Noi-Lieu-linh-hay-Ban-linh-KbzS6Re3GZ6M",
     "title": "Cầm 100 triệu đi mua nhà Hà Nội - Liều lĩnh hay Bản lĩnh?",
     "date": "",
@@ -62,21 +61,6 @@
       "Life style"
     ],
     "link": "https://spiderum.com/bai-dang/Cam-100-trieu-di-mua-nha-Ha-Noi-Lieu-linh-hay-Ban-linh-KbzS6Re3GZ6M",
-    "source": "spiderum"
-  },
-  {
-    "id": "Lieu-viec-dua-het-luong-cho-vo-la-bieu-hien-cua-yeu-thuong-hay-la-su-danh-doi-quyen-ca-nhan-QBed64W2rwyV",
-    "title": "Liệu việc đưa hết lương cho vợ là biểu hiện của yêu thương hay là sự đánh đổi quyền cá nhân?",
-    "date": "",
-    "readTime": "5 min read",
-    "excerpt": "Trong lăng kính của hôn nhân hiện đại, tài chính không đơn thuần chỉ là câu chuyện cơm áo gạo tiền, mà nó còn là thước đo của quyền lực, sự tôn trọng và tiếng nói của mỗi cá nhân trong gia đình. Đã qua rồi cái thời “của...",
-    "tags": [
-      "Góc_nhìn_thời_sự",
-      "Life_style",
-      "Dành cho đàn ông",
-      "Quan điểm - Tranh luận"
-    ],
-    "link": "https://spiderum.com/bai-dang/Lieu-viec-dua-het-luong-cho-vo-la-bieu-hien-cua-yeu-thuong-hay-la-su-danh-doi-quyen-ca-nhan-QBed64W2rwyV",
     "source": "spiderum"
   },
   {
@@ -107,20 +91,6 @@
     "source": "spiderum"
   },
   {
-    "id": "9toTalk-58-Bo-pho-ve-que-trao-luu-nhat-thoi-hay-mong-uoc-doi-doi-r63",
-    "title": "9toTalk #58: Bỏ phố về quê - trào lưu nhất thời hay “mong ước đổi đời”?",
-    "date": "",
-    "readTime": "5 min read",
-    "excerpt": "Những ngày gần đây cộng đồng mạng không ngừng truyền tai nhau về câu chuyện cặp vợ chồng trẻ bỏ thành phố đi làm nông, xây dựng gia...",
-    "tags": [
-      "Góc_nhìn_thời_sự",
-      "Life_style",
-      "Quan điểm - Tranh luận"
-    ],
-    "link": "https://spiderum.com/bai-dang/9toTalk-58-Bo-pho-ve-que-trao-luu-nhat-thoi-hay-mong-uoc-doi-doi-r63",
-    "source": "spiderum"
-  },
-  {
     "id": "AP-LUC-GIOI-VA-QUAN-NIEM-DAN-ONG-XAY-NHA-DAN-BA-XAY-TO-AM-mYFYOa4rpgCu",
     "title": "ÁP LỰC GIỚI VÀ QUAN NIỆM \"ĐÀN ÔNG XÂY NHÀ, ĐÀN BÀ XÂY TỔ ẤM\"",
     "date": "",
@@ -133,30 +103,28 @@
     "source": "spiderum"
   },
   {
-    "id": "Van-hoa-Review-Khi-con-chu-la-con-dao-hai-luoi-4id",
-    "title": "Văn hoá Review: Khi con chữ là con dao hai lưỡi",
+    "id": "9totalk-23-Tu-Ma-Pi-Leng-toi-pho-ca-phe-duong-tau-Khong-quan-duoc-thi-cam-ixr",
+    "title": "9totalk #23: Từ Mã Pí Lèng tới phố cà phê đường tàu: Không quản được thì cấm?",
     "date": "",
     "readTime": "6 min read",
-    "excerpt": "Theo thống kê từ Buzzmetrics, những bài viết mang tính đánh giá (review) tuy không mới nhưng lại đang là một trong những loại nội dung được quan tâm nhiều nhất mạng xã hội. Hãy cùng lướt qua hình ảnh dưới đây, bạn sẽ cảm...",
+    "excerpt": "Nếu nói về du lịch, có lẽ Việt Nam là một trong những nước có cảnh quan thiên nhiên đẹp và đa dạng nhất thế giới, sở hữu những địa điểm thu hút có một không hai. Trong những ngày qua, đã có rất nhiều sự quan tâm dành cho...",
     "tags": [
+      "Góc_nhìn_thời_sự",
       "Quan điểm - Tranh luận"
     ],
-    "link": "https://spiderum.com/bai-dang/Van-hoa-Review-Khi-con-chu-la-con-dao-hai-luoi-4id",
+    "link": "https://spiderum.com/bai-dang/9totalk-23-Tu-Ma-Pi-Leng-toi-pho-ca-phe-duong-tau-Khong-quan-duoc-thi-cam-ixr",
     "source": "spiderum"
   },
   {
-    "id": "Vi-sao-Tinh-yeuHon-nhanSinh-con-luon-kem-Hap-dan-neu-nhin-tu-goc-do-Kinh-te-PNAyFSy7Nobq",
-    "title": "Vì sao Tình yêu/Hôn nhân/Sinh con luôn kém Hấp dẫn nếu nhìn từ góc độ Kinh tế?",
+    "id": "Gin-and-Tonic-R4p3kYiF2ovP",
+    "title": "Gin and Tonic",
     "date": "",
-    "readTime": "14 min read",
-    "excerpt": "Bài viết này phân tích từ góc độ kinh tế học hành vi và không đại diện cho quan điểm cá nhân của tác giả về giá trị của hôn nhân hay gia đình.",
+    "readTime": "5 min read",
+    "excerpt": "Vào ngày mà Sài Gòn này nóng như đổ lửa thì lướt trúng story của một quán bar nào đó đang pha cho khách 1 ly Gin Tonic cũng làm tôi phát thèm.",
     "tags": [
-      "Góc_nhìn_thời_sự",
-      "Thinking_Out_Loud",
-      "Yêu",
-      "Phát_triển_bản_thân"
+      "Quan điểm - Tranh luận"
     ],
-    "link": "https://spiderum.com/bai-dang/Vi-sao-Tinh-yeuHon-nhanSinh-con-luon-kem-Hap-dan-neu-nhin-tu-goc-do-Kinh-te-PNAyFSy7Nobq",
+    "link": "https://spiderum.com/bai-dang/Gin-and-Tonic-R4p3kYiF2ovP",
     "source": "spiderum"
   },
   {
@@ -169,6 +137,18 @@
       "Sách"
     ],
     "link": "https://spiderum.com/bai-dang/MO-BAN-CHINH-THUC-SACH-CHUYEN-VOI-THANH-KHI-LICH-SU-DE-LAI-NHUNG-BAI-HOC-THUC-TIEN-zeIzc7H9GnkP",
+    "source": "spiderum"
+  },
+  {
+    "id": "Hay-don-phong-di-A2PXTGxnrPQ5",
+    "title": "Hãy dọn phòng đi!!!",
+    "date": "",
+    "readTime": "4 min read",
+    "excerpt": "Trước khi bàn luận chuyện chính trị xã hội, hãy dọn phòng của mình trước!",
+    "tags": [
+      "Phát triển bản thân"
+    ],
+    "link": "https://spiderum.com/bai-dang/Hay-don-phong-di-A2PXTGxnrPQ5",
     "source": "spiderum"
   },
   {
@@ -205,6 +185,88 @@
       "Sách"
     ],
     "link": "https://spiderum.com/bai-dang/CHUP-VA-VIET-MOT-CUON-SACH-HOAN-TOAN-ICH-KY-kBub9VpBXyTh",
+    "source": "spiderum"
+  },
+  {
+    "id": "P1-HIEU-DUNG-VE-AI-Nhung-cam-bay-tat-ca-nguoi-su-dung-phai-vuot-qua-APap2FyB64uy",
+    "title": "(P1) HIỂU ĐÚNG VỀ A.I: Những cạm bẫy tất cả người sử dụng phải vượt qua",
+    "date": "",
+    "readTime": "17 min read",
+    "excerpt": "Trí tuệ nhân tạo thường được truyền thông quảng bá như một bước tiến vĩ đại tiếp theo của nhân loại. Chúng ta nghe rất nhiều về việc AI sẽ gia tăng năng suất lao động, thay thế hoàn toàn những công việc lặp đi lặp lại và...",
+    "tags": [
+      "Công nghệ mới",
+      "Khoa học - Công nghệ"
+    ],
+    "link": "https://spiderum.com/bai-dang/P1-HIEU-DUNG-VE-AI-Nhung-cam-bay-tat-ca-nguoi-su-dung-phai-vuot-qua-APap2FyB64uy",
+    "source": "spiderum"
+  },
+  {
+    "id": "CON-MEO-CUA-SCHRODINGER-CO-THE-KHIEN-BAN-KHONG-THE-NHIN-THE-GIOI-NAY-THEO-CACH-CU-DUOC-NUA-rbu",
+    "title": "CON MÈO CỦA SCHRODINGER CÓ THỂ KHIẾN BẠN KHÔNG THỂ NHÌN THẾ GIỚI NÀY THEO CÁCH CŨ ĐƯỢC NỮA.",
+    "date": "",
+    "readTime": "32 min read",
+    "excerpt": "Ảnh: Monster Box.",
+    "tags": [
+      "Vật lý",
+      "Khoa học - Công nghệ"
+    ],
+    "link": "https://spiderum.com/bai-dang/CON-MEO-CUA-SCHRODINGER-CO-THE-KHIEN-BAN-KHONG-THE-NHIN-THE-GIOI-NAY-THEO-CACH-CU-DUOC-NUA-rbu",
+    "source": "spiderum"
+  },
+  {
+    "id": "Lieu-viec-dua-het-luong-cho-vo-la-bieu-hien-cua-yeu-thuong-hay-la-su-danh-doi-quyen-ca-nhan-QBed64W2rwyV",
+    "title": "Liệu việc đưa hết lương cho vợ là biểu hiện của yêu thương hay là sự đánh đổi quyền cá nhân?",
+    "date": "",
+    "readTime": "5 min read",
+    "excerpt": "Trong lăng kính của hôn nhân hiện đại, tài chính không đơn thuần chỉ là câu chuyện cơm áo gạo tiền, mà nó còn là thước đo của quyền lực, sự tôn trọng và tiếng nói của mỗi cá nhân trong gia đình. Đã qua rồi cái thời “của...",
+    "tags": [
+      "Góc_nhìn_thời_sự",
+      "Life_style",
+      "Dành cho đàn ông",
+      "Quan điểm - Tranh luận"
+    ],
+    "link": "https://spiderum.com/bai-dang/Lieu-viec-dua-het-luong-cho-vo-la-bieu-hien-cua-yeu-thuong-hay-la-su-danh-doi-quyen-ca-nhan-QBed64W2rwyV",
+    "source": "spiderum"
+  },
+  {
+    "id": "9toTalk-58-Bo-pho-ve-que-trao-luu-nhat-thoi-hay-mong-uoc-doi-doi-r63",
+    "title": "9toTalk #58: Bỏ phố về quê - trào lưu nhất thời hay “mong ước đổi đời”?",
+    "date": "",
+    "readTime": "5 min read",
+    "excerpt": "Những ngày gần đây cộng đồng mạng không ngừng truyền tai nhau về câu chuyện cặp vợ chồng trẻ bỏ thành phố đi làm nông, xây dựng gia...",
+    "tags": [
+      "Góc_nhìn_thời_sự",
+      "Life_style",
+      "Quan điểm - Tranh luận"
+    ],
+    "link": "https://spiderum.com/bai-dang/9toTalk-58-Bo-pho-ve-que-trao-luu-nhat-thoi-hay-mong-uoc-doi-doi-r63",
+    "source": "spiderum"
+  },
+  {
+    "id": "Van-hoa-Review-Khi-con-chu-la-con-dao-hai-luoi-4id",
+    "title": "Văn hoá Review: Khi con chữ là con dao hai lưỡi",
+    "date": "",
+    "readTime": "6 min read",
+    "excerpt": "Theo thống kê từ Buzzmetrics, những bài viết mang tính đánh giá (review) tuy không mới nhưng lại đang là một trong những loại nội dung được quan tâm nhiều nhất mạng xã hội. Hãy cùng lướt qua hình ảnh dưới đây, bạn sẽ cảm...",
+    "tags": [
+      "Quan điểm - Tranh luận"
+    ],
+    "link": "https://spiderum.com/bai-dang/Van-hoa-Review-Khi-con-chu-la-con-dao-hai-luoi-4id",
+    "source": "spiderum"
+  },
+  {
+    "id": "Vi-sao-Tinh-yeuHon-nhanSinh-con-luon-kem-Hap-dan-neu-nhin-tu-goc-do-Kinh-te-PNAyFSy7Nobq",
+    "title": "Vì sao Tình yêu/Hôn nhân/Sinh con luôn kém Hấp dẫn nếu nhìn từ góc độ Kinh tế?",
+    "date": "",
+    "readTime": "14 min read",
+    "excerpt": "Bài viết này phân tích từ góc độ kinh tế học hành vi và không đại diện cho quan điểm cá nhân của tác giả về giá trị của hôn nhân hay gia đình.",
+    "tags": [
+      "Góc_nhìn_thời_sự",
+      "Thinking_Out_Loud",
+      "Yêu",
+      "Phát_triển_bản_thân"
+    ],
+    "link": "https://spiderum.com/bai-dang/Vi-sao-Tinh-yeuHon-nhanSinh-con-luon-kem-Hap-dan-neu-nhin-tu-goc-do-Kinh-te-PNAyFSy7Nobq",
     "source": "spiderum"
   },
   {
