@@ -23,6 +23,11 @@
   body {
     @apply bg-background text-foreground font-body antialiased;
   }
+
+  .font-display {
+    font-weight: 600;
+    letter-spacing: 0;
+  }
 }
 
 .liquid-glass {

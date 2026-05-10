@@ -24,7 +24,7 @@ export default function Music() {
       <div className="max-w-7xl mx-auto pt-10">
         <div className="mb-16 md:mb-24 flex flex-col md:flex-row md:items-end justify-between gap-8">
           <div>
-            <h2 className="text-4xl md:text-6xl text-foreground mb-4" style={{ fontFamily: "'Noto Serif Display', serif" }}>
+            <h2 className="text-4xl md:text-6xl font-semibold text-foreground mb-4" style={{ fontFamily: "'Noto Serif Display', serif" }}>
               Curated Frequencies
             </h2>
             <p className="text-muted-foreground max-w-md text-base leading-relaxed">
@@ -42,7 +42,7 @@ export default function Music() {
                 <div className="w-12 h-12 rounded-full liquid-glass flex items-center justify-center mb-6 opacity-0 transform translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
                   <Play fill="currentColor" size={18} className="text-foreground ml-1" />
                 </div>
-                <h3 className="text-3xl text-foreground mb-2" style={{ fontFamily: "'Noto Serif Display', serif" }}>{station.title}</h3>
+                <h3 className="text-3xl font-semibold text-foreground mb-2" style={{ fontFamily: "'Noto Serif Display', serif" }}>{station.title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{station.desc}</p>
               </div>
             </div>

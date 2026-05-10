@@ -79,6 +79,22 @@ export function articlePriorityScore(article: Article) {
   return 0;
 }
 
+function articlePublishedTime(article: Article) {
+  const publishedAt = article.publishedAt ? new Date(article.publishedAt).getTime() : NaN;
+  if (Number.isFinite(publishedAt)) return publishedAt;
+
+  const displayDate = article.date ? new Date(article.date).getTime() : NaN;
+  return Number.isFinite(displayDate) ? displayDate : 0;
+}
+
+export function sortArticlesByNewest(articles: Article[]) {
+  return [...articles].sort((a, b) => {
+    const timeDiff = articlePublishedTime(b) - articlePublishedTime(a);
+    if (timeDiff !== 0) return timeDiff;
+    return articlePriorityScore(b) - articlePriorityScore(a);
+  });
+}
+
 export function getArticleSignal(article: Article): Exclude<ArticleSignal, 'latest'> | null {
   const haystack = normalizeTag([article.title, ...(article.tags || [])].join(' '));
   if (TECH_PRIORITY_PATTERNS.some((pattern) => pattern.test(haystack))) return 'tech';
@@ -88,7 +104,7 @@ export function getArticleSignal(article: Article): Exclude<ArticleSignal, 'late
 }
 
 export function limitArchive(articles: Article[]) {
-  return articles.slice(0, MAX_ARCHIVE_ARTICLES);
+  return sortArticlesByNewest(articles).slice(0, MAX_ARCHIVE_ARTICLES);
 }
 
 export function filterArticlesBySignal(articles: Article[], signal: ArticleSignal) {
@@ -100,7 +116,7 @@ export function filterArticlesBySignal(articles: Article[], signal: ArticleSigna
 export function sortArticlesForJournal(articles: Article[], signal: ArticleSignal) {
   const cappedArticles = limitArchive(articles);
   if (signal === 'latest') return cappedArticles;
-  return [...cappedArticles].sort((a, b) => articlePriorityScore(b) - articlePriorityScore(a));
+  return sortArticlesByNewest(cappedArticles);
 }
 
 export function getFeaturedTodayArticles(articles: Article[]) {

@@ -173,6 +173,87 @@ function parseDate(text) {
   return trimmed;
 }
 
+function formatDisplayDate(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleDateString('vi-VN', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    timeZone: 'UTC',
+  });
+}
+
+function normalizePublishedAt(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? '' : date.toISOString();
+}
+
+function extractJsonLdArticles(html) {
+  const $ = cheerio.load(html);
+  const articles = [];
+
+  $('script[type="application/ld+json"]').each((_, element) => {
+    const raw = $(element).html();
+    if (!raw) return;
+    try {
+      const parsed = JSON.parse(raw);
+      const nodes = Array.isArray(parsed) ? parsed : [parsed];
+      nodes.forEach((node) => {
+        if (!node || typeof node !== 'object') return;
+        if (Array.isArray(node['@graph'])) {
+          node['@graph'].forEach((graphNode) => {
+            if (graphNode && typeof graphNode === 'object') nodes.push(graphNode);
+          });
+        }
+        const type = node['@type'];
+        const types = Array.isArray(type) ? type : [type];
+        if (types.some((item) => typeof item === 'string' && item.toLowerCase().includes('article'))) {
+          articles.push(node);
+        }
+      });
+    } catch {
+      // Ignore malformed structured data from source pages.
+    }
+  });
+
+  return articles;
+}
+
+function extractPublishedAt(html) {
+  const $ = cheerio.load(html);
+  const structuredArticle = extractJsonLdArticles(html).find((article) => article.datePublished || article.dateModified);
+  const candidates = [
+    structuredArticle?.datePublished,
+    structuredArticle?.dateModified,
+    $('meta[property="article:published_time"]').attr('content'),
+    $('meta[name="article:published_time"]').attr('content'),
+    $('time[datetime]').first().attr('datetime'),
+  ];
+
+  for (const candidate of candidates) {
+    const publishedAt = normalizePublishedAt(candidate);
+    if (publishedAt) return publishedAt;
+  }
+
+  return '';
+}
+
+function articlePublishedTime(article) {
+  const publishedAt = normalizePublishedAt(article.publishedAt);
+  if (publishedAt) return new Date(publishedAt).getTime();
+
+  const date = new Date(article.date || '');
+  return Number.isNaN(date.getTime()) ? 0 : date.getTime();
+}
+
+function sortByNewest(a, b) {
+  const timeDiff = articlePublishedTime(b) - articlePublishedTime(a);
+  if (timeDiff !== 0) return timeDiff;
+  return articlePriorityScore(b) - articlePriorityScore(a);
+}
+
 function keywordScore(text, keywords) {
   const normalized = normalizeKeyword(text);
   return keywords.reduce((score, keyword) => {
@@ -497,11 +578,13 @@ async function fetchSpiderumArticles() {
     try {
       const articleHtml = await fetchHtml(entry.link);
       const extracted = extractArticleContent(articleHtml, entry.title);
+      const publishedAt = extractPublishedAt(articleHtml);
       const tags = extractTags(articleHtml);
       articles.push({
         id: entry.id,
         title: extracted.title || entry.title,
-        date: entry.date || '',
+        date: publishedAt ? formatDisplayDate(publishedAt) : entry.date || '',
+        publishedAt,
         readTime: extracted.readTime || entry.readTime,
         excerpt: (entry.excerpt || extracted.excerpt || '').slice(0, 220).trim() + ((entry.excerpt || extracted.excerpt || '').length > 220 ? '...' : ''),
         content: extracted.content,
@@ -516,7 +599,7 @@ async function fetchSpiderumArticles() {
 
   const allowedArticles = articles.filter(isAllowedArticle);
   return (allowedArticles.length > 0 ? allowedArticles : articles)
-    .sort((a, b) => articlePriorityScore(b) - articlePriorityScore(a))
+    .sort(sortByNewest)
     .slice(0, MAX_ARTICLES);
 }
 
@@ -537,6 +620,7 @@ async function fetchTxnamArticles() {
         id: entry.id,
         title: extracted.title,
         date: entry.date,
+        publishedAt: normalizePublishedAt(entry.date),
         readTime: extracted.readTime,
         excerpt: (entry.excerpt || extracted.excerpt || '').slice(0, 220).trim() + ((entry.excerpt || extracted.excerpt || '').length > 220 ? '...' : ''),
         content: extracted.content,
@@ -575,9 +659,12 @@ async function main() {
       source: 'spiderum',
     });
   });
+  spiderumArchive.sort(sortByNewest);
 
   const spiderumLimit = Math.max(0, TOTAL_ARTICLE_LIMIT - txnamArticles.length);
-  const mergedArticles = [...spiderumArchive.slice(0, spiderumLimit), ...txnamArticles].slice(0, TOTAL_ARTICLE_LIMIT);
+  const mergedArticles = [...spiderumArchive.slice(0, spiderumLimit), ...txnamArticles]
+    .sort(sortByNewest)
+    .slice(0, TOTAL_ARTICLE_LIMIT);
   fs.mkdirSync(path.dirname(OUTPUT_PATH), { recursive: true });
   fs.mkdirSync(CONTENT_DIR, { recursive: true });
 

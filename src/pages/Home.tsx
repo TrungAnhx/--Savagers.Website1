@@ -27,7 +27,7 @@ export default function Home({ isPlaying, togglePlay, isZenMode }: HomeProps) {
         {/* Hero Section (Full Screen) */}
         <section className="relative z-10 flex flex-col items-center justify-center text-center px-6 min-h-screen">
         <h1 
-          className="animate-fade-rise text-5xl sm:text-7xl md:text-8xl leading-[0.95] tracking-[-2.46px] max-w-7xl font-normal text-foreground"
+          className="animate-fade-rise text-5xl sm:text-7xl md:text-8xl leading-[1.02] max-w-7xl font-semibold text-foreground"
           style={{ fontFamily: "'Noto Serif Display', serif" }}
         >
           Where <em className="not-italic text-muted-foreground">dreams</em> rise <em className="not-italic text-muted-foreground">through the silence.</em>
@@ -56,7 +56,7 @@ export default function Home({ isPlaying, togglePlay, isZenMode }: HomeProps) {
         <div className="relative max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
           <div>
-            <h2 className="text-4xl md:text-6xl text-foreground mb-4" style={{ fontFamily: "'Noto Serif Display', serif" }}>
+            <h2 className="text-4xl md:text-6xl font-semibold text-foreground mb-4" style={{ fontFamily: "'Noto Serif Display', serif" }}>
               Featured Today.
             </h2>
             <p className="text-muted-foreground text-lg max-w-xl">
@@ -82,7 +82,7 @@ export default function Home({ isPlaying, togglePlay, isZenMode }: HomeProps) {
               className="group cursor-pointer liquid-glass liquid-glass-interactive rounded-2xl p-8 flex flex-col animate-[fade-rise_0.6s_ease-out]"
               style={{ animationDelay: `${idx * 0.15}s`, animationFillMode: 'both' }}
               onClick={() => {
-                navigate('/journal', { state: { articleId: entry.article.id } });
+                navigate(`/journal/${encodeURIComponent(entry.article.id)}`);
               }}
             >
               <span className="text-[11px] uppercase tracking-[0.24em] text-primary mb-5 font-mono">
@@ -93,7 +93,7 @@ export default function Home({ isPlaying, togglePlay, isZenMode }: HomeProps) {
                 <span className="flex items-center gap-1"><Clock size={12} /> {entry.article.readTime}</span>
               </div>
               
-              <h3 className="text-2xl text-foreground mb-4 group-hover:text-primary/80 transition-colors flex-1" style={{ fontFamily: "'Noto Serif Display', serif" }}>
+              <h3 className="text-2xl font-semibold text-foreground mb-4 group-hover:text-primary/80 transition-colors flex-1" style={{ fontFamily: "'Noto Serif Display', serif" }}>
                 {entry.article.title}
               </h3>
               

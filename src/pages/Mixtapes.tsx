@@ -86,7 +86,7 @@ export default function Mixtapes({ currentTrack, isPlaying, onPlayTrack }: Mixta
 
       <div className="max-w-4xl mx-auto relative z-10 w-full">
         <header className="mb-20 animate-fade-rise">
-          <h1 className="text-6xl md:text-8xl text-foreground mb-6" style={{ fontFamily: "'Noto Serif Display', serif" }}>
+          <h1 className="text-6xl md:text-8xl font-semibold text-foreground mb-6" style={{ fontFamily: "'Noto Serif Display', serif" }}>
             The Archives.
           </h1>
           <p className="text-muted-foreground text-lg max-w-xl leading-relaxed">
@@ -98,7 +98,7 @@ export default function Mixtapes({ currentTrack, isPlaying, onPlayTrack }: Mixta
           {sortedCategories.map((category, idx) => (
             <section key={idx} className={`animate-fade-rise-delay-${idx + 1}`}>
               <div className="border-b border-border/40 pb-6 mb-8">
-                <h2 className="text-3xl text-foreground mb-2 flex items-center gap-3" style={{ fontFamily: "'Noto Serif Display', serif" }}>
+                <h2 className="text-3xl font-semibold text-foreground mb-2 flex items-center gap-3" style={{ fontFamily: "'Noto Serif Display', serif" }}>
                   <Disc3 className="text-muted-foreground" size={24} />
                   {category.title}
                 </h2>
