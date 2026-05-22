@@ -1,6 +1,23 @@
 import { Suspense, lazy, useMemo, useState } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { Volume2, VolumeX, Play, Pause, SkipForward, SkipBack, Disc3, Shuffle, Repeat, Repeat1, MessageCircle } from 'lucide-react';
+import {
+  Activity,
+  BookOpen,
+  Disc3,
+  Home as HomeIcon,
+  Info,
+  MessageCircle,
+  Pause,
+  Play,
+  Radio,
+  Repeat,
+  Repeat1,
+  Shuffle,
+  SkipBack,
+  SkipForward,
+  Volume2,
+  VolumeX,
+} from 'lucide-react';
 import FloatingNotes from './components/FloatingNotes';
 import notesData from './data/notes.json';
 import { useAudioPlayer } from './hooks/useAudioPlayer';
@@ -9,6 +26,7 @@ const Home = lazy(() => import('./pages/Home'));
 const Mixtapes = lazy(() => import('./pages/Mixtapes'));
 const Journal = lazy(() => import('./pages/Journal'));
 const About = lazy(() => import('./pages/About'));
+const Status = lazy(() => import('./pages/Status'));
 
 function Layout() {
   const isZenMode = false;
@@ -60,7 +78,15 @@ function Layout() {
 
   const isHome = location.pathname === '/';
   const isMixtapes = location.pathname === '/mixtapes';
+  const isStatus = location.pathname === '/status';
   const routeFallback = <div className="min-h-screen w-full" />;
+  const mobileNavItems = [
+    { to: '/', label: 'Home', icon: HomeIcon, active: isHome },
+    { to: '/mixtapes', label: 'Music', icon: Radio, active: isMixtapes },
+    { to: '/journal', label: 'Read', icon: BookOpen, active: location.pathname.startsWith('/journal') },
+    { to: '/status', label: 'Status', icon: Activity, active: isStatus },
+    { to: '/about', label: 'About', icon: Info, active: location.pathname === '/about' },
+  ];
 
   const toggleWhispers = () => {
     const nextValue = !showWhispers;
@@ -83,9 +109,9 @@ function Layout() {
       {showWhispers ? <FloatingNotes notes={allNotes} /> : null}
 
       <div className="flex-1 flex flex-col relative w-full min-h-screen">
-        <nav className={`fixed top-4 left-4 right-4 z-50 grid min-h-[72px] grid-cols-[auto_1fr_auto] items-center gap-4 px-7 py-4 md:px-10 ${isHome ? 'max-w-[88rem]' : 'max-w-[72rem]'} mx-auto liquid-glass rounded-full transition-all duration-500 ${isZenMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-          <div className="flex min-w-[120px] md:min-w-[150px] justify-start">
-            <Link to="/" className="text-3xl text-foreground font-display">
+        <nav className={`fixed top-4 left-4 right-4 z-50 grid min-h-[64px] grid-cols-[auto_1fr_auto] items-center gap-3 px-4 py-3 md:min-h-[72px] md:px-10 md:py-4 ${isHome ? 'max-w-[88rem]' : 'max-w-[72rem]'} mx-auto liquid-glass rounded-full transition-all duration-500 ${isZenMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+          <div className="flex min-w-[110px] justify-start md:min-w-[150px]">
+            <Link to="/" className="text-2xl text-foreground font-display sm:text-3xl">
               Savagers.
             </Link>
           </div>
@@ -94,6 +120,7 @@ function Layout() {
             <Link to="/" className={`text-sm transition-colors hover:text-foreground ${isHome ? 'text-foreground' : 'text-muted-foreground'}`}>Home</Link>
             <Link to="/mixtapes" className={`text-sm transition-colors hover:text-foreground ${isMixtapes ? 'text-foreground' : 'text-muted-foreground'}`}>Frequencies</Link>
             <Link to="/journal" className={`text-sm transition-colors hover:text-foreground ${location.pathname.startsWith('/journal') ? 'text-foreground' : 'text-muted-foreground'}`}>Chronicles</Link>
+            <Link to="/status" className={`text-sm transition-colors hover:text-foreground ${isStatus ? 'text-foreground' : 'text-muted-foreground'}`}>Status</Link>
             <Link to="/about" className={`text-sm transition-colors hover:text-foreground ${location.pathname === '/about' ? 'text-foreground' : 'text-muted-foreground'}`}>About</Link>
             <button
               onClick={toggleWhispers}
@@ -120,15 +147,38 @@ function Layout() {
 
             {isHome ? (
               <>
-                <button onClick={togglePlay} className="liquid-glass liquid-glass-interactive rounded-full px-5 py-2.5 text-sm text-foreground cursor-pointer min-w-[92px]">
+                <button onClick={togglePlay} className="liquid-glass liquid-glass-interactive hidden rounded-full px-5 py-2.5 text-sm text-foreground cursor-pointer min-w-[92px] sm:flex sm:items-center sm:justify-center">
                   {isPlaying ? 'Pause' : 'Tune In'}
                 </button>
-              <button onClick={togglePlay} className="text-foreground hover:text-muted-foreground transition-colors cursor-pointer flex h-10 w-10 items-center justify-center" aria-label="Toggle ambient sound">
-                {isPlaying ? <Volume2 size={20} /> : <VolumeX size={20} />}
-              </button>
+                <button onClick={togglePlay} className="text-foreground hover:text-muted-foreground transition-colors cursor-pointer flex h-10 w-10 items-center justify-center" aria-label="Toggle ambient sound">
+                  {isPlaying ? <Volume2 size={20} /> : <VolumeX size={20} />}
+                </button>
               </>
             ) : null}
           </div>
+        </nav>
+
+        <nav
+          className={`fixed left-3 right-3 z-50 grid grid-cols-5 gap-1 rounded-full px-2 py-2 md:hidden liquid-glass transition-all duration-500 ${isZenMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+          style={{ bottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
+          aria-label="Mobile navigation"
+        >
+          {mobileNavItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                className={`flex min-h-[48px] min-w-0 flex-col items-center justify-center gap-1 rounded-full px-1 text-[10px] transition-colors ${
+                  item.active ? 'liquid-glass-active text-foreground' : 'text-muted-foreground hover:text-foreground'
+                }`}
+                aria-current={item.active ? 'page' : undefined}
+              >
+                <Icon size={18} />
+                <span className="max-w-full truncate">{item.label}</span>
+              </Link>
+            );
+          })}
         </nav>
 
         <Suspense fallback={routeFallback}>
@@ -137,14 +187,15 @@ function Layout() {
             <Route path="/mixtapes" element={<Mixtapes currentTrack={currentTrack} isPlaying={isPlaying} onPlayTrack={handlePlayTrack} isZenMode={isZenMode} />} />
             <Route path="/journal" element={<Journal isZenMode={isZenMode} />} />
             <Route path="/journal/:articleId" element={<Journal isZenMode={isZenMode} />} />
+            <Route path="/status" element={<Status isZenMode={isZenMode} />} />
             <Route path="/about" element={<About onAddNote={handleAddNote} isZenMode={isZenMode} />} />
           </Routes>
         </Suspense>
       </div>
 
       {currentTrack && isMixtapes && (
-        <div className={`fixed bottom-8 left-1/2 -translate-x-1/2 w-[calc(100%-3rem)] max-w-3xl z-50 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl px-6 py-4 flex items-center justify-between animate-fade-rise-center shadow-2xl transition-opacity duration-1000 ${isZenMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-          <div className="flex items-center gap-4 w-1/3">
+        <div className={`fixed bottom-28 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-3xl z-40 bg-white/5 backdrop-blur-md border border-white/10 rounded-lg px-5 py-4 flex flex-col gap-4 items-stretch justify-between animate-fade-rise-center shadow-2xl transition-opacity duration-1000 md:bottom-8 md:z-50 md:w-[calc(100%-3rem)] md:flex-row md:items-center md:gap-0 md:rounded-2xl md:px-6 ${isZenMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+          <div className="flex items-center gap-4 md:w-1/3">
             <div className="w-12 h-12 rounded bg-muted/50 flex items-center justify-center overflow-hidden relative">
               <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
               <Disc3 size={20} className={`text-muted-foreground ${isPlaying ? 'animate-[spin_4s_linear_infinite]' : ''}`} />
@@ -155,7 +206,7 @@ function Layout() {
             </div>
           </div>
 
-          <div className="flex flex-col items-center justify-center w-1/3 gap-2">
+          <div className="flex flex-col items-center justify-center gap-2 md:w-1/3">
             <div className="flex items-center gap-6">
               <button onClick={() => setIsShuffle(!isShuffle)} className={`transition-colors cursor-pointer ${isShuffle ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`} title="Shuffle">
                 <Shuffle size={16} />
@@ -181,7 +232,7 @@ function Layout() {
             </div>
           </div>
 
-          <div className="flex items-center justify-end w-1/3 gap-3">
+          <div className="hidden items-center justify-end gap-3 md:flex md:w-1/3">
             <button onClick={toggleMute} className="cursor-pointer transition-colors flex items-center">
               {volume === 0 ? <VolumeX size={16} className="text-muted-foreground hover:text-foreground transition-colors" /> : <Volume2 size={16} className="text-muted-foreground hover:text-foreground transition-colors" />}
             </button>

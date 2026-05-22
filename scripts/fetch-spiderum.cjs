@@ -12,9 +12,15 @@ const SOURCE_URLS = (process.env.SPIDERUM_SOURCE_URLS ||
 const TXNAM_SOURCE_URL = process.env.TXNAM_SOURCE_URL || 'https://txnam.net';
 const OUTPUT_PATH = './public/data/articles.json';
 const CONTENT_DIR = './public/data/articles';
+const STATUS_PATH = './public/data/fetch-status.json';
 const MAX_ARTICLES = Number.parseInt(process.env.SPIDERUM_MAX_ARTICLES || '28', 10);
 const TXNAM_MAX_ARTICLES = Number.parseInt(process.env.TXNAM_MAX_ARTICLES || '10', 10);
 const TOTAL_ARTICLE_LIMIT = Number.parseInt(process.env.TOTAL_ARTICLE_LIMIT || '100', 10);
+const FETCH_TIMEOUT_MS = parsePositiveInteger(process.env.FETCH_TIMEOUT_MS, 25000);
+const FETCH_RETRY_ATTEMPTS = parsePositiveInteger(process.env.FETCH_RETRY_ATTEMPTS, 3);
+const FETCH_RETRY_DELAY_MS = parsePositiveInteger(process.env.FETCH_RETRY_DELAY_MS, 1500);
+const RUN_STARTED_AT = new Date().toISOString();
+const runWarnings = [];
 const PREFERRED_KEYWORDS = [
   'ai',
   'công nghệ',
@@ -96,6 +102,11 @@ const YOUTH_PATTERNS = [
   /\bnghe nghiep\b/,
 ];
 
+function parsePositiveInteger(value, fallback) {
+  const parsed = Number.parseInt(value || '', 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
 function normalizeWhitespace(value) {
   return value.replace(/\s+/g, ' ').trim();
 }
@@ -171,6 +182,15 @@ function parseDate(text) {
     });
   }
   return trimmed;
+}
+
+function normalizeSourceDate(text) {
+  const trimmed = normalizeWhitespace(text);
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(trimmed)) {
+    const [day, month, year] = trimmed.split('/').map(Number);
+    return new Date(Date.UTC(year, month - 1, day)).toISOString();
+  }
+  return normalizePublishedAt(trimmed);
 }
 
 function formatDisplayDate(value) {
@@ -273,17 +293,108 @@ function matchCount(text, patterns) {
   return patterns.reduce((count, pattern) => count + (pattern.test(text) ? 1 : 0), 0);
 }
 
-async function fetchHtml(url) {
-  const response = await fetch(url, {
-    headers: {
-      'user-agent': 'Mozilla/5.0 (compatible; SavagersBot/1.0; +https://github.com/TrungAnhx/--Savagers.Website1)',
-      accept: 'text/html,application/xhtml+xml',
-    },
-  });
-  if (!response.ok) {
-    throw new Error(`Request failed for ${url}: ${response.status}`);
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function isRetryableStatus(status) {
+  return status === 408 || status === 409 || status === 425 || status === 429 || status >= 500;
+}
+
+function errorMessage(error) {
+  if (error && typeof error === 'object' && error.name === 'AbortError') {
+    return `Request timed out after ${FETCH_TIMEOUT_MS}ms`;
   }
-  return response.text();
+  return error instanceof Error ? error.message : String(error);
+}
+
+function escapeActionMessage(value) {
+  return String(value)
+    .replace(/%/g, '%25')
+    .replace(/\r/g, '%0D')
+    .replace(/\n/g, '%0A');
+}
+
+function logWarning(message) {
+  runWarnings.push(message);
+  console.warn(message);
+  if (process.env.GITHUB_ACTIONS === 'true') {
+    console.log(`::warning::${escapeActionMessage(message)}`);
+  }
+}
+
+function readFetchStatus() {
+  try {
+    return JSON.parse(fs.readFileSync(STATUS_PATH, 'utf8'));
+  } catch {
+    return null;
+  }
+}
+
+function writeFetchStatus(status) {
+  const previousStatus = readFetchStatus();
+  const finishedAt = status.finishedAt || new Date().toISOString();
+  const isFailure = status.status === 'failure';
+  const previousFailures = previousStatus?.status === 'failure'
+    ? Number.parseInt(previousStatus.consecutiveFailures || '0', 10) || 0
+    : 0;
+  const lastSuccessAt = isFailure
+    ? previousStatus?.lastSuccessAt || (previousStatus?.status === 'success' ? previousStatus.finishedAt : '')
+    : finishedAt;
+
+  const payload = {
+    version: 1,
+    ...status,
+    startedAt: status.startedAt || RUN_STARTED_AT,
+    finishedAt,
+    lastSuccessAt,
+    consecutiveFailures: isFailure ? previousFailures + 1 : 0,
+    warnings: status.warnings || runWarnings,
+  };
+
+  fs.mkdirSync(path.dirname(STATUS_PATH), { recursive: true });
+  fs.writeFileSync(STATUS_PATH, JSON.stringify(payload, null, 2) + '\n', 'utf8');
+}
+
+async function fetchHtml(url) {
+  let lastError = null;
+
+  for (let attempt = 1; attempt <= FETCH_RETRY_ATTEMPTS; attempt += 1) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+
+    try {
+      const response = await fetch(url, {
+        headers: {
+          'user-agent': 'Mozilla/5.0 (compatible; SavagersBot/1.0; +https://github.com/TrungAnhx/--Savagers.Website1)',
+          accept: 'text/html,application/xhtml+xml',
+        },
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        const error = new Error(`Request failed for ${url}: ${response.status}`);
+        error.status = response.status;
+        throw error;
+      }
+
+      return response.text();
+    } catch (error) {
+      lastError = error;
+      const status = error && typeof error === 'object' ? error.status : undefined;
+      const canRetry = (!status || isRetryableStatus(status)) && attempt < FETCH_RETRY_ATTEMPTS;
+
+      if (!canRetry) break;
+
+      const delayMs = FETCH_RETRY_DELAY_MS * attempt;
+      console.log(`Retrying ${url} in ${delayMs}ms (${attempt}/${FETCH_RETRY_ATTEMPTS}): ${errorMessage(error)}`);
+      await sleep(delayMs);
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
+  throw lastError || new Error(`Request failed for ${url}`);
 }
 
 function extractListEntries(html, sourceUrl) {
@@ -313,6 +424,8 @@ function extractListEntries(html, sourceUrl) {
         .join(' ')
     );
 
+    const publishedAt = dateMatch ? normalizeSourceDate(dateMatch[0]) : '';
+
     entries.push({
       id: slugFromUrl(absoluteUrl),
       title,
@@ -321,6 +434,7 @@ function extractListEntries(html, sourceUrl) {
       excerpt: excerpt && excerpt !== title ? excerpt : '',
       readTime,
       date: dateMatch ? parseDate(dateMatch[0]) : '',
+      publishedAt,
     });
     seen.add(absoluteUrl);
   });
@@ -490,6 +604,7 @@ function extractTxnamListEntries(html) {
     if (seen.has(absoluteUrl)) return;
 
     const date = normalizeWhitespace($post.find('.post-date').first().text());
+    const publishedAt = normalizeSourceDate(date);
     const excerpt = normalizeWhitespace(
       $post
         .clone()
@@ -505,6 +620,7 @@ function extractTxnamListEntries(html) {
       title,
       link: absoluteUrl,
       date: date ? parseDate(date) : '',
+      publishedAt,
       excerpt,
       category,
     });
@@ -556,20 +672,36 @@ function extractTxnamArticleContent(html, fallbackTitle) {
 
 async function fetchSpiderumArticles() {
   const dedupedEntries = new Map();
+  const failedSources = [];
+
   for (const sourceUrl of SOURCE_URLS) {
-    const listHtml = await fetchHtml(sourceUrl);
-    const entriesFromSource = extractListEntries(listHtml, sourceUrl);
-    entriesFromSource.forEach((entry) => {
-      const existing = dedupedEntries.get(entry.link);
-      if (!existing || articlePriorityScore(entry) > articlePriorityScore(existing)) {
-        dedupedEntries.set(entry.link, entry);
-      }
-    });
+    try {
+      const listHtml = await fetchHtml(sourceUrl);
+      const entriesFromSource = extractListEntries(listHtml, sourceUrl);
+      console.log(`Found ${entriesFromSource.length} Spiderum entries from ${sourceUrl}`);
+      entriesFromSource.forEach((entry) => {
+        const existing = dedupedEntries.get(entry.link);
+        if (!existing || articlePriorityScore(entry) > articlePriorityScore(existing)) {
+          dedupedEntries.set(entry.link, entry);
+        }
+      });
+    } catch (error) {
+      const message = `Skipping Spiderum source ${sourceUrl}: ${errorMessage(error)}`;
+      failedSources.push(message);
+      logWarning(message);
+    }
   }
 
-  const entries = Array.from(dedupedEntries.values()).slice(0, MAX_ARTICLES);
+  const entries = Array.from(dedupedEntries.values())
+    .sort(sortByNewest)
+    .slice(0, MAX_ARTICLES);
+
   if (entries.length === 0) {
-    throw new Error('No Spiderum articles found from source page.');
+    throw new Error(
+      failedSources.length > 0
+        ? `No Spiderum articles found. Failed sources: ${failedSources.join(' | ')}`
+        : 'No Spiderum articles found from source page.'
+    );
   }
 
   const articles = [];
@@ -578,7 +710,7 @@ async function fetchSpiderumArticles() {
     try {
       const articleHtml = await fetchHtml(entry.link);
       const extracted = extractArticleContent(articleHtml, entry.title);
-      const publishedAt = extractPublishedAt(articleHtml);
+      const publishedAt = extractPublishedAt(articleHtml) || entry.publishedAt || '';
       const tags = extractTags(articleHtml);
       articles.push({
         id: entry.id,
@@ -593,8 +725,12 @@ async function fetchSpiderumArticles() {
         source: 'spiderum',
       });
     } catch (error) {
-      console.error(`Failed to fetch article ${entry.link}: ${error.message}`);
+      logWarning(`Failed to fetch Spiderum article ${entry.link}: ${errorMessage(error)}`);
     }
+  }
+
+  if (articles.length === 0) {
+    throw new Error('No Spiderum article detail pages were fetched successfully.');
   }
 
   const allowedArticles = articles.filter(isAllowedArticle);
@@ -604,10 +740,18 @@ async function fetchSpiderumArticles() {
 }
 
 async function fetchTxnamArticles() {
-  const homepageHtml = await fetchHtml(TXNAM_SOURCE_URL);
+  let homepageHtml = '';
+  try {
+    homepageHtml = await fetchHtml(TXNAM_SOURCE_URL);
+  } catch (error) {
+    logWarning(`Skipping txnam source ${TXNAM_SOURCE_URL}: ${errorMessage(error)}`);
+    return [];
+  }
+
   const entries = extractTxnamListEntries(homepageHtml);
   if (entries.length === 0) {
-    throw new Error('No txnam articles found on the homepage.');
+    logWarning('No txnam articles found on the homepage.');
+    return [];
   }
 
   const articles = [];
@@ -620,7 +764,7 @@ async function fetchTxnamArticles() {
         id: entry.id,
         title: extracted.title,
         date: entry.date,
-        publishedAt: normalizePublishedAt(entry.date),
+        publishedAt: entry.publishedAt || normalizePublishedAt(entry.date),
         readTime: extracted.readTime,
         excerpt: (entry.excerpt || extracted.excerpt || '').slice(0, 220).trim() + ((entry.excerpt || extracted.excerpt || '').length > 220 ? '...' : ''),
         content: extracted.content,
@@ -629,7 +773,7 @@ async function fetchTxnamArticles() {
         source: 'txnam',
       });
     } catch (error) {
-      console.error(`Failed to fetch txnam article ${entry.link}: ${error.message}`);
+      logWarning(`Failed to fetch txnam article ${entry.link}: ${errorMessage(error)}`);
     }
   }
 
@@ -637,8 +781,6 @@ async function fetchTxnamArticles() {
 }
 
 async function main() {
-  const spiderumArticles = await fetchSpiderumArticles();
-  const txnamArticles = await fetchTxnamArticles();
   let existingArticles = [];
   try {
     existingArticles = JSON.parse(fs.readFileSync(OUTPUT_PATH, 'utf8'));
@@ -646,7 +788,22 @@ async function main() {
     existingArticles = [];
   }
 
+  const spiderumArticles = await fetchSpiderumArticles();
+  const freshTxnamArticles = await fetchTxnamArticles();
   const existingSpiderumArticles = existingArticles.filter((article) => article?.source === 'spiderum' && typeof article.link === 'string');
+  const existingTxnamArticles = existingArticles.filter((article) => article?.source === 'txnam' && typeof article.link === 'string');
+  const txnamArticles = freshTxnamArticles.length > 0
+    ? freshTxnamArticles
+    : existingTxnamArticles.map((article) => ({
+        ...article,
+        content: readStoredArticleContent(article),
+        source: 'txnam',
+      }));
+
+  if (freshTxnamArticles.length === 0 && existingTxnamArticles.length > 0) {
+    logWarning(`Keeping ${existingTxnamArticles.length} stored txnam articles because no fresh txnam articles were fetched.`);
+  }
+
   const spiderumArchive = [];
   const seenSpiderumLinks = new Set();
 
@@ -684,10 +841,40 @@ async function main() {
     .forEach((file) => fs.unlinkSync(path.join(CONTENT_DIR, file)));
 
   fs.writeFileSync(OUTPUT_PATH, JSON.stringify(mergedArticles.map(articleMetadata), null, 2) + '\n', 'utf8');
+  writeFetchStatus({
+    status: 'success',
+    message: 'Article archive refreshed.',
+    sourceUrls: {
+      spiderum: SOURCE_URLS,
+      txnam: TXNAM_SOURCE_URL,
+    },
+    counts: {
+      spiderumFetched: spiderumArticles.length,
+      spiderumStored: Math.min(spiderumArchive.length, spiderumLimit),
+      txnamFresh: freshTxnamArticles.length,
+      txnamStored: txnamArticles.length,
+      totalStored: mergedArticles.length,
+    },
+  });
   console.log(`Saved ${Math.min(spiderumArchive.length, spiderumLimit)} Spiderum articles and ${txnamArticles.length} txnam articles.`);
 }
 
 main().catch((error) => {
   console.error(error);
+  try {
+    writeFetchStatus({
+      status: 'failure',
+      message: errorMessage(error),
+      sourceUrls: {
+        spiderum: SOURCE_URLS,
+        txnam: TXNAM_SOURCE_URL,
+      },
+      counts: {
+        totalStored: 0,
+      },
+    });
+  } catch (statusError) {
+    console.error(`Failed to write fetch status: ${errorMessage(statusError)}`);
+  }
   process.exitCode = 1;
 });

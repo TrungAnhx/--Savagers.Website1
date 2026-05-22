@@ -25,41 +25,41 @@ export default function Home({ isPlaying, togglePlay, isZenMode }: HomeProps) {
 
       <div className={`relative z-10 flex-1 flex flex-col transition-opacity duration-1000 ${isZenMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
         {/* Hero Section (Full Screen) */}
-        <section className="relative z-10 flex flex-col items-center justify-center text-center px-6 min-h-screen">
-        <h1 
-          className="animate-fade-rise text-5xl sm:text-7xl md:text-8xl leading-[1.02] max-w-7xl font-semibold text-foreground"
-          style={{ fontFamily: "'Noto Serif Display', serif" }}
-        >
-          Where <em className="not-italic text-muted-foreground">dreams</em> rise <em className="not-italic text-muted-foreground">through the silence.</em>
-        </h1>
-        
-        <p className="animate-fade-rise-delay text-muted-foreground text-base sm:text-lg max-w-2xl mt-8 leading-relaxed">
-          We're designing tools for deep thinkers, bold creators, and quiet rebels. Amid the chaos, we build digital spaces for sharp focus and inspired work.
-        </p>
-        
-        <button 
-          onClick={() => {
-            document.getElementById('featured-journal')?.scrollIntoView({ behavior: 'smooth' });
-          }}
-          className="animate-fade-rise-delay-2 liquid-glass rounded-full px-14 py-5 text-base text-foreground mt-12 hover:scale-[1.03] cursor-pointer inline-block"
-        >
-          Begin Journey
-        </button>
-        <button onClick={togglePlay} className="mt-4 text-muted-foreground hover:text-foreground transition-colors text-sm opacity-0 absolute">
-          {isPlaying ? 'Playing' : 'Paused'}
-        </button>
-      </section>
+        <section className="relative z-10 flex min-h-[100svh] flex-col items-center justify-center px-5 pb-28 pt-32 text-center sm:px-6 md:min-h-screen md:pb-24 md:pt-36">
+          <h1
+            className="animate-fade-rise max-w-[12ch] text-[2.9rem] font-semibold leading-[1.05] text-foreground sm:max-w-4xl sm:text-7xl md:max-w-7xl md:text-8xl"
+            style={{ fontFamily: "'Noto Serif Display', serif" }}
+          >
+            Where <em className="not-italic text-muted-foreground">dreams</em> rise <em className="not-italic text-muted-foreground">through the silence.</em>
+          </h1>
+
+          <p className="animate-fade-rise-delay mt-6 max-w-xl text-sm leading-relaxed text-muted-foreground sm:mt-8 sm:text-base md:text-lg">
+            We're designing tools for deep thinkers, bold creators, and quiet rebels. Amid the chaos, we build digital spaces for sharp focus and inspired work.
+          </p>
+
+          <button
+            onClick={() => {
+              document.getElementById('featured-journal')?.scrollIntoView({ behavior: 'smooth' });
+            }}
+            className="animate-fade-rise-delay-2 liquid-glass mt-9 inline-block rounded-full px-8 py-4 text-sm text-foreground hover:scale-[1.03] cursor-pointer sm:mt-12 sm:px-14 sm:py-5 sm:text-base"
+          >
+            Begin Journey
+          </button>
+          <button onClick={togglePlay} className="absolute mt-4 text-sm text-muted-foreground opacity-0 transition-colors hover:text-foreground">
+            {isPlaying ? 'Playing' : 'Paused'}
+          </button>
+        </section>
 
       {/* Featured Journal Section */}
-      <section id="featured-journal" className="relative z-10 w-full overflow-hidden px-6 py-32">
+      <section id="featured-journal" className="relative z-10 w-full overflow-hidden px-4 py-24 pb-36 sm:px-6 md:py-32">
         <div className="absolute inset-0 bg-background/72 backdrop-blur-[2px]" />
         <div className="relative max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
+        <div className="mb-10 flex flex-col justify-between gap-6 md:mb-16 md:flex-row md:items-end md:gap-8">
           <div>
-            <h2 className="text-4xl md:text-6xl font-semibold text-foreground mb-4" style={{ fontFamily: "'Noto Serif Display', serif" }}>
+            <h2 className="mb-4 text-3xl font-semibold text-foreground sm:text-4xl md:text-6xl" style={{ fontFamily: "'Noto Serif Display', serif" }}>
               Featured Today.
             </h2>
-            <p className="text-muted-foreground text-lg max-w-xl">
+            <p className="max-w-xl text-base leading-relaxed text-muted-foreground md:text-lg">
               One tech signal, one life signal, one debate signal. A calmer way to enter the archive.
             </p>
           </div>
@@ -68,18 +68,18 @@ export default function Home({ isPlaying, togglePlay, isZenMode }: HomeProps) {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-3 md:gap-8">
           {isLoading && Array.from({ length: 3 }).map((_, idx) => (
             <div
               key={idx}
-              className="liquid-glass rounded-2xl p-8 min-h-[320px] animate-pulse"
+              className="liquid-glass min-h-[260px] rounded-lg p-6 animate-pulse md:min-h-[320px] md:p-8"
             />
           ))}
 
           {!isLoading && featuredArticles.map((entry, idx) => (
             <article 
               key={entry.article.id} 
-              className="group cursor-pointer liquid-glass liquid-glass-interactive rounded-2xl p-8 flex flex-col animate-[fade-rise_0.6s_ease-out]"
+              className="group cursor-pointer liquid-glass liquid-glass-interactive rounded-lg p-6 flex flex-col animate-[fade-rise_0.6s_ease-out] md:p-8"
               style={{ animationDelay: `${idx * 0.15}s`, animationFillMode: 'both' }}
               onClick={() => {
                 navigate(`/journal/${encodeURIComponent(entry.article.id)}`);
@@ -93,7 +93,7 @@ export default function Home({ isPlaying, togglePlay, isZenMode }: HomeProps) {
                 <span className="flex items-center gap-1"><Clock size={12} /> {entry.article.readTime}</span>
               </div>
               
-              <h3 className="text-2xl font-semibold text-foreground mb-4 group-hover:text-primary/80 transition-colors flex-1" style={{ fontFamily: "'Noto Serif Display', serif" }}>
+              <h3 className="text-xl font-semibold text-foreground mb-4 group-hover:text-primary/80 transition-colors flex-1 sm:text-2xl" style={{ fontFamily: "'Noto Serif Display', serif" }}>
                 {entry.article.title}
               </h3>
               
@@ -113,7 +113,7 @@ export default function Home({ isPlaying, togglePlay, isZenMode }: HomeProps) {
         </div>
 
         {!isLoading && articles.length > 0 && (
-          <div className="mt-16 liquid-glass rounded-full px-5 py-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-white/78 w-fit max-w-full">
+          <div className="mt-12 liquid-glass rounded-lg px-5 py-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-white/78 w-fit max-w-full md:mt-16 md:rounded-full">
             <span className="whitespace-nowrap">
               Developed by Savagers<sup className="ml-0.5 text-[10px] leading-none">®</sup>
             </span>

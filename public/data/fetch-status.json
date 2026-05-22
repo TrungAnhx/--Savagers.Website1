@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "status": "unknown",
+  "message": "Fetch status will appear after the next article workflow run.",
+  "startedAt": "",
+  "finishedAt": "",
+  "lastSuccessAt": "",
+  "consecutiveFailures": 0,
+  "sourceUrls": {
+    "spiderum": [],
+    "txnam": ""
+  },
+  "counts": {
+    "spiderumFetched": 0,
+    "spiderumStored": 0,
+    "txnamFresh": 0,
+    "txnamStored": 0,
+    "totalStored": 0
+  },
+  "warnings": []
+}

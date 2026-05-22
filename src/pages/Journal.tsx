@@ -1,18 +1,36 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { BookOpen, Calendar, ChevronLeft, ChevronRight, Clock, Share2 } from 'lucide-react';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import {
+  AlertTriangle,
+  BookOpen,
+  Bookmark,
+  BookmarkCheck,
+  Calendar,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  RefreshCw,
+  Search,
+  Share2,
+  X,
+} from 'lucide-react';
 import AmbientVideo from '../components/AmbientVideo';
 import { useArticleContent } from '../hooks/useArticleContent';
 import { useArticles } from '../hooks/useArticles';
+import { useBookmarkedArticles } from '../hooks/useBookmarkedArticles';
+import { useFetchStatus } from '../hooks/useFetchStatus';
 import { htmlHasReadableContent, sanitizeHtml } from '../utils/sanitizeHtml';
 import {
   ARTICLES_PER_PAGE,
   MAX_ARCHIVE_PAGES,
   displayTagLabel,
   filterArticlesBySignal,
+  matchesArticleQuery,
   sortArticlesForJournal,
   type ArticleSignal,
 } from '../utils/articles';
+import { formatDateTime } from '../utils/formatDateTime';
 
 const backgroundVideos = [
   '/backgrounds/bg1.mp4',
@@ -31,8 +49,12 @@ export default function Journal({ isZenMode }: JournalProps) {
   const navigate = useNavigate();
   const { articleId: routeArticleId } = useParams<{ articleId?: string }>();
   const { articles, isLoading, error } = useArticles();
+  const { fetchStatus } = useFetchStatus();
+  const { bookmarkedIds, bookmarkedIdSet, isBookmarked, toggleBookmark } = useBookmarkedArticles();
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedSignal, setSelectedSignal] = useState<ArticleSignal>('latest');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSavedOnly, setShowSavedOnly] = useState(false);
   const [bgIndex, setBgIndex] = useState(() => Math.floor(Math.random() * backgroundVideos.length));
 
   useEffect(() => {
@@ -48,6 +70,10 @@ export default function Journal({ isZenMode }: JournalProps) {
     }, 100);
   }, [currentPage, selectedSignal]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, showSavedOnly]);
+
   const locationArticleId = location.state && typeof location.state === 'object' && 'articleId' in location.state
     ? (location.state as { articleId?: string }).articleId ?? null
     : null;
@@ -61,19 +87,31 @@ export default function Journal({ isZenMode }: JournalProps) {
 
   const currentBg = backgroundVideos[bgIndex];
   const filteredArticles = useMemo(() => {
-    return sortArticlesForJournal(filterArticlesBySignal(articles, selectedSignal), selectedSignal);
-  }, [articles, selectedSignal]);
+    const signalArticles = filterArticlesBySignal(articles, selectedSignal);
+    const searchedArticles = signalArticles.filter((article) => matchesArticleQuery(article, searchQuery));
+    const savedArticles = showSavedOnly
+      ? searchedArticles.filter((article) => bookmarkedIdSet.has(article.id))
+      : searchedArticles;
+    return sortArticlesForJournal(savedArticles, selectedSignal);
+  }, [articles, bookmarkedIdSet, searchQuery, selectedSignal, showSavedOnly]);
 
   const totalPages = Math.min(MAX_ARCHIVE_PAGES, Math.ceil(filteredArticles.length / ARTICLES_PER_PAGE));
+  const visiblePage = Math.min(currentPage, Math.max(totalPages, 1));
   const paginatedArticles = useMemo(() => {
-    return filteredArticles.slice((currentPage - 1) * ARTICLES_PER_PAGE, currentPage * ARTICLES_PER_PAGE);
-  }, [filteredArticles, currentPage]);
+    return filteredArticles.slice((visiblePage - 1) * ARTICLES_PER_PAGE, visiblePage * ARTICLES_PER_PAGE);
+  }, [filteredArticles, visiblePage]);
 
   const activeArticle = activeArticleId ? (articles.find((article) => article.id === activeArticleId) ?? null) : null;
   const isArticleNotFound = Boolean(activeArticleId && !isLoading && !activeArticle);
   const { content: activeArticleContent, isLoading: isArticleContentLoading, error: articleContentError } = useArticleContent(activeArticle?.id ?? null);
   const sanitizedContent = useMemo(() => sanitizeHtml(activeArticleContent), [activeArticleContent]);
   const hasReadableContent = useMemo(() => htmlHasReadableContent(sanitizedContent), [sanitizedContent]);
+  const hasFetchWarning = fetchStatus.status === 'failure' || Number(fetchStatus.consecutiveFailures || 0) >= 2;
+  const fetchStatusText = fetchStatus.status === 'success'
+    ? `Updated ${formatDateTime(fetchStatus.finishedAt)}`
+    : fetchStatus.status === 'failure'
+      ? `Fetch lỗi ${Number(fetchStatus.consecutiveFailures || 0)} lần`
+      : 'Waiting for first fetch status';
 
   const signalOptions: Array<{ key: ArticleSignal; label: string }> = [
     { key: 'latest', label: 'Mới nhất' },
@@ -148,6 +186,52 @@ export default function Journal({ isZenMode }: JournalProps) {
                   </button>
                 ))}
               </div>
+
+              <div className="grid gap-3 md:grid-cols-[1fr_auto] mb-5">
+                <label className="liquid-glass flex h-12 min-w-0 items-center gap-3 rounded-full px-5 text-muted-foreground focus-within:text-foreground">
+                  <Search size={17} className="shrink-0" />
+                  <input
+                    value={searchQuery}
+                    onChange={(event) => setSearchQuery(event.target.value)}
+                    className="min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                    placeholder="Search title, tag, source..."
+                    type="search"
+                  />
+                  {searchQuery ? (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery('')}
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:text-foreground"
+                      aria-label="Clear search"
+                    >
+                      <X size={16} />
+                    </button>
+                  ) : null}
+                </label>
+
+                <button
+                  onClick={() => setShowSavedOnly((value) => !value)}
+                  className={`liquid-glass liquid-glass-interactive flex h-12 items-center justify-center gap-2 rounded-full px-5 text-sm ${
+                    showSavedOnly ? 'liquid-glass-active text-foreground' : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                  aria-pressed={showSavedOnly}
+                >
+                  {showSavedOnly ? <BookmarkCheck size={17} /> : <Bookmark size={17} />}
+                  <span>Saved {bookmarkedIds.length}</span>
+                </button>
+              </div>
+
+              <Link
+                to="/status"
+                className={`inline-flex max-w-full items-center gap-2 rounded-full px-4 py-2 text-xs font-mono transition-colors ${
+                  hasFetchWarning
+                    ? 'bg-amber-400/10 text-amber-100 hover:text-foreground'
+                    : 'bg-white/5 text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {hasFetchWarning ? <AlertTriangle size={14} /> : fetchStatus.status === 'success' ? <CheckCircle2 size={14} /> : <RefreshCw size={14} />}
+                <span className="truncate">{fetchStatusText}</span>
+              </Link>
             </header>
 
             {isLoading && (
@@ -181,9 +265,26 @@ export default function Journal({ isZenMode }: JournalProps) {
                       navigate(`/journal/${encodeURIComponent(article.id)}`);
                     }}
                   >
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground font-mono mb-4">
-                      <span className="flex items-center gap-1"><Calendar size={12} /> {article.date}</span>
-                      <span className="flex items-center gap-1"><Clock size={12} /> {article.readTime}</span>
+                    <div className="mb-4 flex items-start justify-between gap-4">
+                      <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground font-mono">
+                        <span className="flex items-center gap-1"><Calendar size={12} /> {article.date}</span>
+                        <span className="flex items-center gap-1"><Clock size={12} /> {article.readTime}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          toggleBookmark(article.id);
+                        }}
+                        className={`liquid-glass liquid-glass-interactive flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
+                          isBookmarked(article.id) ? 'liquid-glass-active text-foreground' : 'text-muted-foreground hover:text-foreground'
+                        }`}
+                        aria-label={isBookmarked(article.id) ? 'Remove saved article' : 'Save article'}
+                        aria-pressed={isBookmarked(article.id)}
+                        title={isBookmarked(article.id) ? 'Remove saved article' : 'Save article'}
+                      >
+                        {isBookmarked(article.id) ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}
+                      </button>
                     </div>
 
                     <h2 className="text-3xl md:text-4xl font-semibold text-foreground mb-4 group-hover:text-primary/80 transition-colors" style={{ fontFamily: "'Noto Serif Display', serif" }}>
@@ -205,7 +306,9 @@ export default function Journal({ isZenMode }: JournalProps) {
                 ))}
 
                 {filteredArticles.length === 0 && (
-                  <p className="text-muted-foreground italic text-center py-12">No articles found in this lane.</p>
+                  <p className="text-muted-foreground italic text-center py-12">
+                    {showSavedOnly ? 'No saved articles match this view.' : 'No articles found in this lane.'}
+                  </p>
                 )}
               </div>
             )}
@@ -217,14 +320,14 @@ export default function Journal({ isZenMode }: JournalProps) {
                     setCurrentPage((page) => Math.max(1, page - 1));
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
-                  disabled={currentPage === 1}
+                  disabled={visiblePage === 1}
                   className="liquid-glass w-10 h-10 rounded-full flex items-center justify-center text-foreground disabled:opacity-30 disabled:cursor-not-allowed hover:scale-105 transition-transform"
                 >
                   <ChevronLeft size={20} />
                 </button>
 
                 <span className="text-muted-foreground font-mono text-sm">
-                  {currentPage} / {totalPages}
+                  {visiblePage} / {totalPages}
                 </span>
 
                 <button
@@ -232,7 +335,7 @@ export default function Journal({ isZenMode }: JournalProps) {
                     setCurrentPage((page) => Math.min(totalPages, page + 1));
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
-                  disabled={currentPage === totalPages}
+                  disabled={visiblePage === totalPages}
                   className="liquid-glass w-10 h-10 rounded-full flex items-center justify-center text-foreground disabled:opacity-30 disabled:cursor-not-allowed hover:scale-105 transition-transform"
                 >
                   <ChevronRight size={20} />
@@ -274,6 +377,14 @@ export default function Journal({ isZenMode }: JournalProps) {
                   className="flex items-center gap-2 hover:text-foreground transition-colors"
                 >
                   <Share2 size={14} /> Share Link
+                </button>
+                <button
+                  onClick={() => toggleBookmark(activeArticle.id)}
+                  className="flex items-center gap-2 hover:text-foreground transition-colors"
+                  aria-pressed={isBookmarked(activeArticle.id)}
+                >
+                  {isBookmarked(activeArticle.id) ? <BookmarkCheck size={14} /> : <Bookmark size={14} />}
+                  {isBookmarked(activeArticle.id) ? 'Saved' : 'Save'}
                 </button>
               </div>
             </header>

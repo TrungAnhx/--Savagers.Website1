@@ -95,6 +95,24 @@ export function sortArticlesByNewest(articles: Article[]) {
   });
 }
 
+export function matchesArticleQuery(article: Article, query: string) {
+  const tokens = normalizeTag(query)
+    .split(/\s+/)
+    .map((token) => token.trim())
+    .filter(Boolean);
+  if (tokens.length === 0) return true;
+
+  const haystack = normalizeTag([
+    article.title,
+    article.excerpt,
+    article.date,
+    article.source,
+    ...(article.tags || []),
+  ].join(' '));
+
+  return tokens.every((token) => haystack.includes(token));
+}
+
 export function getArticleSignal(article: Article): Exclude<ArticleSignal, 'latest'> | null {
   const haystack = normalizeTag([article.title, ...(article.tags || [])].join(' '));
   if (TECH_PRIORITY_PATTERNS.some((pattern) => pattern.test(haystack))) return 'tech';
