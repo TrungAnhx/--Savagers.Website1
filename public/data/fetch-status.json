@@ -1,21 +1,26 @@
 {
   "version": 1,
-  "status": "unknown",
-  "message": "Fetch status will appear after the next article workflow run.",
-  "startedAt": "",
-  "finishedAt": "",
-  "lastSuccessAt": "",
-  "consecutiveFailures": 0,
+  "status": "success",
+  "message": "Article archive refreshed.",
   "sourceUrls": {
-    "spiderum": [],
-    "txnam": ""
+    "spiderum": [
+      "https://spiderum.com/nguoi-dung/spiderum",
+      "https://spiderum.com/danh-muc/khoa-hoc-cong-nghe",
+      "https://spiderum.com/danh-muc/quan-diem-tranh-luan",
+      "https://spiderum.com/danh-muc/life-style"
+    ],
+    "txnam": "https://txnam.net"
   },
   "counts": {
-    "spiderumFetched": 0,
-    "spiderumStored": 0,
-    "txnamFresh": 0,
-    "txnamStored": 0,
-    "totalStored": 0
+    "spiderumFetched": 16,
+    "spiderumStored": 90,
+    "txnamFresh": 10,
+    "txnamStored": 10,
+    "totalStored": 100
   },
+  "startedAt": "2026-05-23T02:56:32.667Z",
+  "finishedAt": "2026-05-23T02:58:13.710Z",
+  "lastSuccessAt": "2026-05-23T02:58:13.710Z",
+  "consecutiveFailures": 0,
   "warnings": []
 }
