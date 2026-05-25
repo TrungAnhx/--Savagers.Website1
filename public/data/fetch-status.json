@@ -12,15 +12,15 @@
     "txnam": "https://txnam.net"
   },
   "counts": {
-    "spiderumFetched": 16,
+    "spiderumFetched": 15,
     "spiderumStored": 90,
     "txnamFresh": 10,
     "txnamStored": 10,
     "totalStored": 100
   },
-  "startedAt": "2026-05-24T03:37:09.621Z",
-  "finishedAt": "2026-05-24T03:39:10.960Z",
-  "lastSuccessAt": "2026-05-24T03:39:10.960Z",
+  "startedAt": "2026-05-25T03:51:36.153Z",
+  "finishedAt": "2026-05-25T03:56:01.763Z",
+  "lastSuccessAt": "2026-05-25T03:56:01.763Z",
   "consecutiveFailures": 0,
   "warnings": []
 }
