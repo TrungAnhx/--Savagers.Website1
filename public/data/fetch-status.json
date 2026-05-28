@@ -12,17 +12,19 @@
     "txnam": "https://txnam.net"
   },
   "counts": {
-    "spiderumFetched": 6,
+    "spiderumFetched": 15,
     "spiderumStored": 90,
     "txnamFresh": 10,
     "txnamStored": 10,
     "totalStored": 100
   },
-  "startedAt": "2026-05-27T03:51:23.153Z",
-  "finishedAt": "2026-05-27T03:54:57.480Z",
-  "lastSuccessAt": "2026-05-27T03:54:57.480Z",
+  "startedAt": "2026-05-28T03:37:19.162Z",
+  "finishedAt": "2026-05-28T03:46:57.821Z",
+  "lastSuccessAt": "2026-05-28T03:46:57.821Z",
   "consecutiveFailures": 0,
   "warnings": [
-    "Skipping Spiderum source https://spiderum.com/nguoi-dung/spiderum: Request timed out after 25000ms"
+    "Failed to fetch Spiderum article https://spiderum.com/bai-dang/NGUOI-TRONG-MUON-NGHE-EP-39-Nghe-Tro-ly-Khong-chi-la-canh-tay-phai-ma-con-la-bo-nao-thu-hai-cua-nha-lanh-dao-t5xgin0XWVsX: Request timed out after 25000ms",
+    "Failed to fetch Spiderum article https://spiderum.com/bai-dang/Khi-nha-la-noi-ket-noi-cam-xuc-voi-coi-nguon-van-hoa-eSAa43YhFeUi: Request timed out after 25000ms",
+    "Failed to fetch Spiderum article https://spiderum.com/bai-dang/Nen-DAU-TU-vao-dau-KHI-CON-TRE-TIEN-KHONG-TE-SS2-EP03-KGGfhFqVrDZw: Request timed out after 25000ms"
   ]
 }
