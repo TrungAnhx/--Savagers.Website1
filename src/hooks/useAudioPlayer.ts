@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { getStoredItem, setStoredItem } from '../utils/storage';
 
 export interface Track {
   name: string;
@@ -10,24 +11,29 @@ export interface Track {
 type RepeatMode = 'none' | 'all' | 'one';
 
 function readBool(key: string, fallback: boolean): boolean {
-  const saved = localStorage.getItem(key);
+  const saved = getStoredItem(key);
   if (saved === null) return fallback;
   try {
-    return JSON.parse(saved);
+    const parsed = JSON.parse(saved);
+    return typeof parsed === 'boolean' ? parsed : fallback;
   } catch {
     return fallback;
   }
 }
 
+function clampVolume(value: number) {
+  return Math.min(1, Math.max(0, value));
+}
+
 function readNumber(key: string, fallback: number): number {
-  const saved = localStorage.getItem(key);
+  const saved = getStoredItem(key);
   if (saved === null) return fallback;
   const n = parseFloat(saved);
-  return Number.isFinite(n) ? n : fallback;
+  return Number.isFinite(n) ? clampVolume(n) : fallback;
 }
 
 function readRepeatMode(key: string, fallback: RepeatMode): RepeatMode {
-  const saved = localStorage.getItem(key);
+  const saved = getStoredItem(key);
   if (saved === null) return fallback;
   try {
     const parsed = JSON.parse(saved);
@@ -35,6 +41,18 @@ function readRepeatMode(key: string, fallback: RepeatMode): RepeatMode {
   } catch {
     return fallback;
   }
+}
+
+function findTrackIndex(playlist: Track[], track: Track | null) {
+  if (!track) return -1;
+  return playlist.findIndex((item) => item.url === track.url);
+}
+
+function pickShuffledTrack(playlist: Track[], currentTrack: Track | null) {
+  if (playlist.length === 0) return null;
+  if (playlist.length <= 1) return playlist[0];
+  const candidates = playlist.filter((track) => track.url !== currentTrack?.url);
+  return candidates[Math.floor(Math.random() * candidates.length)];
 }
 
 export function useAudioPlayer() {
@@ -48,16 +66,16 @@ export function useAudioPlayer() {
   const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
-    localStorage.setItem('savagers_isShuffle', JSON.stringify(isShuffle));
+    setStoredItem('savagers_isShuffle', JSON.stringify(isShuffle));
   }, [isShuffle]);
   useEffect(() => {
-    localStorage.setItem('savagers_repeatMode', JSON.stringify(repeatMode));
+    setStoredItem('savagers_repeatMode', JSON.stringify(repeatMode));
   }, [repeatMode]);
   useEffect(() => {
-    localStorage.setItem('savagers_volume', volume.toString());
+    setStoredItem('savagers_volume', volume.toString());
   }, [volume]);
   useEffect(() => {
-    localStorage.setItem('savagers_previousVolume', previousVolume.toString());
+    setStoredItem('savagers_previousVolume', previousVolume.toString());
   }, [previousVolume]);
 
   useEffect(() => {
@@ -89,23 +107,23 @@ export function useAudioPlayer() {
   }, [isPlaying]);
 
   const handlePlayTrack = useCallback((track: Track, newPlaylist: Track[]) => {
-    if (currentTrack?.name === track.name) {
+    if (currentTrack?.url === track.url) {
       togglePlay();
       return;
     }
     setPlaylist(newPlaylist);
     setCurrentTrack(track);
-  }, [currentTrack?.name, togglePlay]);
+  }, [currentTrack?.url, togglePlay]);
 
   const playNext = useCallback(() => {
     if (!currentTrack || playlist.length === 0) return;
 
     if (isShuffle) {
-      setCurrentTrack(playlist[Math.floor(Math.random() * playlist.length)]);
+      setCurrentTrack(pickShuffledTrack(playlist, currentTrack));
       return;
     }
 
-    const currentIndex = playlist.findIndex((t) => t.name === currentTrack.name);
+    const currentIndex = findTrackIndex(playlist, currentTrack);
     if (currentIndex === -1) return;
 
     if (currentIndex === playlist.length - 1) {
@@ -121,11 +139,11 @@ export function useAudioPlayer() {
     if (!currentTrack || playlist.length === 0) return;
 
     if (isShuffle) {
-      setCurrentTrack(playlist[Math.floor(Math.random() * playlist.length)]);
+      setCurrentTrack(pickShuffledTrack(playlist, currentTrack));
       return;
     }
 
-    const currentIndex = playlist.findIndex((t) => t.name === currentTrack.name);
+    const currentIndex = findTrackIndex(playlist, currentTrack);
     if (currentIndex === -1) return;
     setCurrentTrack(currentIndex === 0 ? playlist[playlist.length - 1] : playlist[currentIndex - 1]);
   }, [currentTrack, isShuffle, playlist]);
@@ -136,22 +154,23 @@ export function useAudioPlayer() {
       audioRef.current.play().catch(() => setIsPlaying(false));
       return;
     }
-    const currentIndex = playlist.findIndex((t) => t.name === currentTrack?.name);
+    const currentIndex = findTrackIndex(playlist, currentTrack);
     if (repeatMode === 'none' && currentIndex === playlist.length - 1 && !isShuffle) {
       setIsPlaying(false);
       return;
     }
     playNext();
-  }, [currentTrack?.name, isShuffle, playNext, playlist, repeatMode]);
+  }, [currentTrack, isShuffle, playNext, playlist, repeatMode]);
 
   const toggleRepeatMode = useCallback(() => {
     setRepeatMode((prev) => (prev === 'none' ? 'all' : prev === 'all' ? 'one' : 'none'));
   }, []);
 
   const handleVolumeChange = useCallback((nextVolume: number) => {
-    setVolume(nextVolume);
-    if (nextVolume > 0) setPreviousVolume(nextVolume);
-    if (audioRef.current) audioRef.current.volume = nextVolume;
+    const normalizedVolume = clampVolume(nextVolume);
+    setVolume(normalizedVolume);
+    if (normalizedVolume > 0) setPreviousVolume(normalizedVolume);
+    if (audioRef.current) audioRef.current.volume = normalizedVolume;
   }, []);
 
   const toggleMute = useCallback(() => {
@@ -160,7 +179,7 @@ export function useAudioPlayer() {
       if (audioRef.current) audioRef.current.volume = 0;
       return;
     }
-    const restored = previousVolume > 0 ? previousVolume : 1;
+    const restored = previousVolume > 0 ? clampVolume(previousVolume) : 1;
     setVolume(restored);
     if (audioRef.current) audioRef.current.volume = restored;
   }, [previousVolume, volume]);

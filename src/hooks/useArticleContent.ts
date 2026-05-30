@@ -6,42 +6,67 @@ interface UseArticleContentState {
   error: string | null;
 }
 
+interface ArticleContentResult {
+  articleId: string | null;
+  content: string;
+  error: string | null;
+}
+
+const articleContentCache = new Map<string, string>();
+const articleContentRequests = new Map<string, Promise<string>>();
+
+async function fetchArticleContent(articleId: string) {
+  const cachedContent = articleContentCache.get(articleId);
+  if (cachedContent !== undefined) return cachedContent;
+
+  const existingRequest = articleContentRequests.get(articleId);
+  if (existingRequest) return existingRequest;
+
+  const request = fetch(`/data/articles/${encodeURIComponent(articleId)}.json`, { cache: 'no-store' })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`Failed to load article content: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then((data) => {
+      const content = typeof data.content === 'string' ? data.content : '';
+      articleContentCache.set(articleId, content);
+      return content;
+    })
+    .finally(() => {
+      articleContentRequests.delete(articleId);
+    });
+
+  articleContentRequests.set(articleId, request);
+  return request;
+}
+
 export function useArticleContent(articleId: string | null): UseArticleContentState {
-  const [content, setContent] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<ArticleContentResult>(() => ({
+    articleId,
+    content: articleId ? articleContentCache.get(articleId) ?? '' : '',
+    error: null,
+  }));
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadArticleContent() {
-      if (!articleId) {
-        setContent('');
-        setError(null);
-        setIsLoading(false);
-        return;
-      }
+      if (!articleId) return;
 
       try {
-        setIsLoading(true);
-        setError(null);
-        const response = await fetch(`/data/articles/${encodeURIComponent(articleId)}.json`, { cache: 'no-store' });
-        if (!response.ok) {
-          throw new Error(`Failed to load article content: ${response.status}`);
-        }
-
-        const data = await response.json();
+        const content = await fetchArticleContent(articleId);
         if (!cancelled) {
-          setContent(typeof data.content === 'string' ? data.content : '');
+          setResult({ articleId, content, error: null });
         }
       } catch (loadError) {
         if (!cancelled) {
-          setError(loadError instanceof Error ? loadError.message : 'Failed to load article content.');
-          setContent('');
-        }
-      } finally {
-        if (!cancelled) {
-          setIsLoading(false);
+          setResult({
+            articleId,
+            content: '',
+            error: loadError instanceof Error ? loadError.message : 'Failed to load article content.',
+          });
         }
       }
     }
@@ -53,5 +78,12 @@ export function useArticleContent(articleId: string | null): UseArticleContentSt
     };
   }, [articleId]);
 
-  return { content, isLoading, error };
+  const isCurrentArticle = result.articleId === articleId;
+  const hasCachedContent = articleId ? articleContentCache.has(articleId) : false;
+
+  return {
+    content: isCurrentArticle ? result.content : '',
+    isLoading: Boolean(articleId && (!isCurrentArticle || articleContentRequests.has(articleId) || (!hasCachedContent && !result.error))),
+    error: isCurrentArticle ? result.error : null,
+  };
 }

@@ -1,13 +1,7 @@
 import { Play, Disc3 } from 'lucide-react';
 import { useState, useEffect, useMemo } from 'react';
 import AmbientVideo from '../components/AmbientVideo';
-
-interface Track {
-  name: string;
-  duration: string;
-  artist: string;
-  url: string;
-}
+import type { Track } from '../hooks/useAudioPlayer';
 
 interface MixtapesProps {
   currentTrack: Track | null;
@@ -96,7 +90,7 @@ export default function Mixtapes({ currentTrack, isPlaying, onPlayTrack }: Mixta
 
         <div className="space-y-24">
           {sortedCategories.map((category, idx) => (
-            <section key={idx} className={`animate-fade-rise-delay-${idx + 1}`}>
+            <section key={category.title} className={`animate-fade-rise-delay-${idx + 1}`}>
               <div className="border-b border-border/40 pb-6 mb-8">
                 <h2 className="text-3xl font-semibold text-foreground mb-2 flex items-center gap-3" style={{ fontFamily: "'Noto Serif Display', serif" }}>
                   <Disc3 className="text-muted-foreground" size={24} />
@@ -107,10 +101,10 @@ export default function Mixtapes({ currentTrack, isPlaying, onPlayTrack }: Mixta
 
               <div className="flex flex-col gap-2">
                 {category.tracks.map((track, trackIdx) => {
-                  const isCurrentTrack = currentTrack?.name === track.name;
+                  const isCurrentTrack = currentTrack?.url === track.url;
                   return (
                     <div
-                      key={trackIdx}
+                      key={track.url}
                       onClick={() => onPlayTrack(track, fullPlaylist)}
                       className={`group flex items-center justify-between p-4 rounded-lg transition-colors cursor-pointer ${isCurrentTrack ? 'bg-white/10' : 'hover:bg-white/5'}`}
                     >

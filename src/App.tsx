@@ -18,10 +18,11 @@ import {
   Volume2,
   VolumeX,
 } from 'lucide-react';
-import FloatingNotes from './components/FloatingNotes';
 import notesData from './data/notes.json';
 import { useAudioPlayer } from './hooks/useAudioPlayer';
+import { getStoredItem, setStoredItem } from './utils/storage';
 
+const FloatingNotes = lazy(() => import('./components/FloatingNotes'));
 const Home = lazy(() => import('./pages/Home'));
 const Mixtapes = lazy(() => import('./pages/Mixtapes'));
 const Journal = lazy(() => import('./pages/Journal'));
@@ -31,18 +32,20 @@ const Status = lazy(() => import('./pages/Status'));
 function Layout() {
   const isZenMode = false;
   const [showWhispers, setShowWhispers] = useState(() => {
-    const saved = localStorage.getItem('savagers_showWhispers');
+    const saved = getStoredItem('savagers_showWhispers');
     if (saved === null) return true;
     try {
-      return JSON.parse(saved);
+      const parsed = JSON.parse(saved);
+      return typeof parsed === 'boolean' ? parsed : true;
     } catch {
       return true;
     }
   });
   const [customNotes, setCustomNotes] = useState<string[]>(() => {
-    const saved = localStorage.getItem('savagers_notes');
+    const saved = getStoredItem('savagers_notes');
     try {
-      return saved ? JSON.parse(saved) : [];
+      const parsed = saved ? JSON.parse(saved) : [];
+      return Array.isArray(parsed) ? parsed.filter((note): note is string => typeof note === 'string') : [];
     } catch {
       return [];
     }
@@ -71,9 +74,11 @@ function Layout() {
   } = useAudioPlayer();
 
   const handleAddNote = (note: string) => {
-    const newNotes = [...customNotes, note];
-    setCustomNotes(newNotes);
-    localStorage.setItem('savagers_notes', JSON.stringify(newNotes));
+    setCustomNotes((currentNotes) => {
+      const newNotes = [...currentNotes, note];
+      setStoredItem('savagers_notes', JSON.stringify(newNotes));
+      return newNotes;
+    });
   };
 
   const isHome = location.pathname === '/';
@@ -91,7 +96,7 @@ function Layout() {
   const toggleWhispers = () => {
     const nextValue = !showWhispers;
     setShowWhispers(nextValue);
-    localStorage.setItem('savagers_showWhispers', JSON.stringify(nextValue));
+    setStoredItem('savagers_showWhispers', JSON.stringify(nextValue));
   };
 
   return (
@@ -99,14 +104,18 @@ function Layout() {
       <audio
         ref={audioRef}
         loop={!currentTrack}
-        preload="auto"
+        preload="metadata"
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
         onEnded={currentTrack ? handleEnded : undefined}
         src={currentTrack?.url || '/musics/default-lofi.mp3'}
       />
 
-      {showWhispers ? <FloatingNotes notes={allNotes} /> : null}
+      {showWhispers ? (
+        <Suspense fallback={null}>
+          <FloatingNotes notes={allNotes} />
+        </Suspense>
+      ) : null}
 
       <div className="flex-1 flex flex-col relative w-full min-h-screen">
         <nav className={`fixed top-4 left-4 right-4 z-50 grid min-h-[64px] grid-cols-[auto_1fr_auto] items-center gap-3 px-4 py-3 md:min-h-[72px] md:px-10 md:py-4 ${isHome ? 'max-w-[88rem]' : 'max-w-[72rem]'} mx-auto liquid-glass rounded-full transition-all duration-500 ${isZenMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
@@ -183,7 +192,7 @@ function Layout() {
 
         <Suspense fallback={routeFallback}>
           <Routes>
-            <Route path="/" element={<Home isPlaying={isPlaying} togglePlay={togglePlay} isZenMode={isZenMode} />} />
+            <Route path="/" element={<Home isZenMode={isZenMode} />} />
             <Route path="/mixtapes" element={<Mixtapes currentTrack={currentTrack} isPlaying={isPlaying} onPlayTrack={handlePlayTrack} isZenMode={isZenMode} />} />
             <Route path="/journal" element={<Journal isZenMode={isZenMode} />} />
             <Route path="/journal/:articleId" element={<Journal isZenMode={isZenMode} />} />

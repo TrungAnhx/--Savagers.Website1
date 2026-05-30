@@ -27,7 +27,6 @@ import {
   displayTagLabel,
   filterArticlesBySignal,
   matchesArticleQuery,
-  sortArticlesForJournal,
   type ArticleSignal,
 } from '../utils/articles';
 import { formatDateTime } from '../utils/formatDateTime';
@@ -43,6 +42,13 @@ const backgroundVideos = [
 interface JournalProps {
   isZenMode?: boolean;
 }
+
+const signalOptions: Array<{ key: ArticleSignal; label: string }> = [
+  { key: 'latest', label: 'Mới nhất' },
+  { key: 'tech', label: 'Tech' },
+  { key: 'life', label: 'Lối sống' },
+  { key: 'debate', label: 'Góc nhìn' },
+];
 
 export default function Journal({ isZenMode }: JournalProps) {
   const location = useLocation();
@@ -65,14 +71,11 @@ export default function Journal({ isZenMode }: JournalProps) {
   }, []);
 
   useEffect(() => {
-    setTimeout(() => {
+    const timeoutId = window.setTimeout(() => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }, 100);
+    return () => window.clearTimeout(timeoutId);
   }, [currentPage, selectedSignal]);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, showSavedOnly]);
 
   const locationArticleId = location.state && typeof location.state === 'object' && 'articleId' in location.state
     ? (location.state as { articleId?: string }).articleId ?? null
@@ -92,7 +95,7 @@ export default function Journal({ isZenMode }: JournalProps) {
     const savedArticles = showSavedOnly
       ? searchedArticles.filter((article) => bookmarkedIdSet.has(article.id))
       : searchedArticles;
-    return sortArticlesForJournal(savedArticles, selectedSignal);
+    return savedArticles;
   }, [articles, bookmarkedIdSet, searchQuery, selectedSignal, showSavedOnly]);
 
   const totalPages = Math.min(MAX_ARCHIVE_PAGES, Math.ceil(filteredArticles.length / ARTICLES_PER_PAGE));
@@ -112,13 +115,6 @@ export default function Journal({ isZenMode }: JournalProps) {
     : fetchStatus.status === 'failure'
       ? `Fetch lỗi ${Number(fetchStatus.consecutiveFailures || 0)} lần`
       : 'Waiting for first fetch status';
-
-  const signalOptions: Array<{ key: ArticleSignal; label: string }> = [
-    { key: 'latest', label: 'Mới nhất' },
-    { key: 'tech', label: 'Tech' },
-    { key: 'life', label: 'Lối sống' },
-    { key: 'debate', label: 'Góc nhìn' },
-  ];
 
   const handleShareArticle = async () => {
     if (!activeArticle) return;
@@ -192,7 +188,10 @@ export default function Journal({ isZenMode }: JournalProps) {
                   <Search size={17} className="shrink-0" />
                   <input
                     value={searchQuery}
-                    onChange={(event) => setSearchQuery(event.target.value)}
+                    onChange={(event) => {
+                      setSearchQuery(event.target.value);
+                      setCurrentPage(1);
+                    }}
                     className="min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
                     placeholder="Search title, tag, source..."
                     type="search"
@@ -200,7 +199,10 @@ export default function Journal({ isZenMode }: JournalProps) {
                   {searchQuery ? (
                     <button
                       type="button"
-                      onClick={() => setSearchQuery('')}
+                      onClick={() => {
+                        setSearchQuery('');
+                        setCurrentPage(1);
+                      }}
                       className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:text-foreground"
                       aria-label="Clear search"
                     >
@@ -210,7 +212,10 @@ export default function Journal({ isZenMode }: JournalProps) {
                 </label>
 
                 <button
-                  onClick={() => setShowSavedOnly((value) => !value)}
+                  onClick={() => {
+                    setShowSavedOnly((value) => !value);
+                    setCurrentPage(1);
+                  }}
                   className={`liquid-glass liquid-glass-interactive flex h-12 items-center justify-center gap-2 rounded-full px-5 text-sm ${
                     showSavedOnly ? 'liquid-glass-active text-foreground' : 'text-muted-foreground hover:text-foreground'
                   }`}

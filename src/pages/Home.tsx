@@ -5,12 +5,10 @@ import { useArticles } from '../hooks/useArticles';
 import { displayTagLabel, getFeaturedTodayArticles } from '../utils/articles';
 
 interface HomeProps {
-  isPlaying: boolean;
-  togglePlay: () => void;
   isZenMode?: boolean;
 }
 
-export default function Home({ isPlaying, togglePlay, isZenMode }: HomeProps) {
+export default function Home({ isZenMode }: HomeProps) {
   const navigate = useNavigate();
   const { articles, isLoading } = useArticles();
   const featuredArticles = getFeaturedTodayArticles(articles);
@@ -44,9 +42,6 @@ export default function Home({ isPlaying, togglePlay, isZenMode }: HomeProps) {
             className="animate-fade-rise-delay-2 liquid-glass mt-9 inline-block rounded-full px-8 py-4 text-sm text-foreground hover:scale-[1.03] cursor-pointer sm:mt-12 sm:px-14 sm:py-5 sm:text-base"
           >
             Begin Journey
-          </button>
-          <button onClick={togglePlay} className="absolute mt-4 text-sm text-muted-foreground opacity-0 transition-colors hover:text-foreground">
-            {isPlaying ? 'Playing' : 'Paused'}
           </button>
         </section>
 
