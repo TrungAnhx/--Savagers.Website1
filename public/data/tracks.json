@@ -1,0 +1,90 @@
+{
+  "version": 1,
+  "defaultCover": "/eagle.png",
+  "categories": [
+    {
+      "id": "global-covers",
+      "title": "Global Covers & Hits",
+      "description": "Timeless vocals and acoustic covers for deep focus.",
+      "cover": "/eagle.png",
+      "tracks": [
+        {
+          "name": "I'm Not The Only One",
+          "duration": "3:59",
+          "artist": "Sam Smith",
+          "url": "/musics/track1.mp3"
+        },
+        {
+          "name": "Patience",
+          "duration": "3:22",
+          "artist": "Take That",
+          "url": "/musics/track2.mp3"
+        },
+        {
+          "name": "Modern Loneliness",
+          "duration": "4:12",
+          "artist": "Lauv (Alec Chambers Cover)",
+          "url": "/musics/track5.mp3"
+        },
+        {
+          "name": "Be Happy",
+          "duration": "3:18",
+          "artist": "Dixie D'Amelio (Alec Chambers Cover)",
+          "url": "/musics/track6.mp3"
+        }
+      ]
+    },
+    {
+      "id": "vietnamese-vibes",
+      "title": "Vietnamese Vibes",
+      "description": "Local lo-fi and R&B beats to chill out.",
+      "cover": "/eagle.png",
+      "tracks": [
+        {
+          "name": "Hello Em Có Khỏe Không",
+          "duration": "3:45",
+          "artist": "Dfoxie37 & Myhoa & Tuann",
+          "url": "/musics/track3.mp3"
+        },
+        {
+          "name": "Think About U",
+          "duration": "3:10",
+          "artist": "Kay Châu Anh",
+          "url": "/musics/track4.mp3"
+        }
+      ]
+    },
+    {
+      "id": "piano-covers",
+      "title": "Piano Covers",
+      "description": "Soothing piano instrumentals for absolute silence.",
+      "cover": "/eagle.png",
+      "tracks": [
+        {
+          "name": "Nơi Này Có Anh",
+          "duration": "4:20",
+          "artist": "Sơn Tùng M-TP",
+          "url": "/musics/track7.mp3"
+        },
+        {
+          "name": "Modern Loneliness",
+          "duration": "3:55",
+          "artist": "Lauv (Keudae Cover)",
+          "url": "/musics/track8.mp3"
+        },
+        {
+          "name": "Âm Thầm Bên Em",
+          "duration": "4:50",
+          "artist": "Sơn Tùng M-TP",
+          "url": "/musics/track9.mp3"
+        },
+        {
+          "name": "Xe Đạp",
+          "duration": "4:15",
+          "artist": "Thùy Chi ft. M4U",
+          "url": "/musics/track10.mp3"
+        }
+      ]
+    }
+  ]
+}

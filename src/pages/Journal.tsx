@@ -1,16 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
-  AlertTriangle,
   BookOpen,
   Bookmark,
   BookmarkCheck,
   Calendar,
-  CheckCircle2,
   ChevronLeft,
   ChevronRight,
   Clock,
-  RefreshCw,
+  History,
   Search,
   Share2,
   X,
@@ -19,7 +17,7 @@ import AmbientVideo from '../components/AmbientVideo';
 import { useArticleContent } from '../hooks/useArticleContent';
 import { useArticles } from '../hooks/useArticles';
 import { useBookmarkedArticles } from '../hooks/useBookmarkedArticles';
-import { useFetchStatus } from '../hooks/useFetchStatus';
+import { useReadingHistory } from '../hooks/useReadingHistory';
 import { htmlHasReadableContent, sanitizeHtml } from '../utils/sanitizeHtml';
 import {
   ARTICLES_PER_PAGE,
@@ -29,7 +27,6 @@ import {
   matchesArticleQuery,
   type ArticleSignal,
 } from '../utils/articles';
-import { formatDateTime } from '../utils/formatDateTime';
 
 const backgroundVideos = [
   '/backgrounds/bg1.mp4',
@@ -55,12 +52,13 @@ export default function Journal({ isZenMode }: JournalProps) {
   const navigate = useNavigate();
   const { articleId: routeArticleId } = useParams<{ articleId?: string }>();
   const { articles, isLoading, error } = useArticles();
-  const { fetchStatus } = useFetchStatus();
   const { bookmarkedIds, bookmarkedIdSet, isBookmarked, toggleBookmark } = useBookmarkedArticles();
+  const { history, historyMap, getArticleProgress, markArticleOpened, updateArticleProgress } = useReadingHistory();
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedSignal, setSelectedSignal] = useState<ArticleSignal>('latest');
   const [searchQuery, setSearchQuery] = useState('');
   const [showSavedOnly, setShowSavedOnly] = useState(false);
+  const [showHistoryOnly, setShowHistoryOnly] = useState(false);
   const [bgIndex, setBgIndex] = useState(() => Math.floor(Math.random() * backgroundVideos.length));
 
   useEffect(() => {
@@ -95,8 +93,15 @@ export default function Journal({ isZenMode }: JournalProps) {
     const savedArticles = showSavedOnly
       ? searchedArticles.filter((article) => bookmarkedIdSet.has(article.id))
       : searchedArticles;
-    return savedArticles;
-  }, [articles, bookmarkedIdSet, searchQuery, selectedSignal, showSavedOnly]);
+    if (!showHistoryOnly) return savedArticles;
+    return savedArticles
+      .filter((article) => historyMap.has(article.id))
+      .sort((a, b) => {
+        const aTime = historyMap.get(a.id)?.lastReadAt ?? '';
+        const bTime = historyMap.get(b.id)?.lastReadAt ?? '';
+        return bTime.localeCompare(aTime);
+      });
+  }, [articles, bookmarkedIdSet, historyMap, searchQuery, selectedSignal, showHistoryOnly, showSavedOnly]);
 
   const totalPages = Math.min(MAX_ARCHIVE_PAGES, Math.ceil(filteredArticles.length / ARTICLES_PER_PAGE));
   const visiblePage = Math.min(currentPage, Math.max(totalPages, 1));
@@ -109,12 +114,32 @@ export default function Journal({ isZenMode }: JournalProps) {
   const { content: activeArticleContent, isLoading: isArticleContentLoading, error: articleContentError } = useArticleContent(activeArticle?.id ?? null);
   const sanitizedContent = useMemo(() => sanitizeHtml(activeArticleContent), [activeArticleContent]);
   const hasReadableContent = useMemo(() => htmlHasReadableContent(sanitizedContent), [sanitizedContent]);
-  const hasFetchWarning = fetchStatus.status === 'failure' || Number(fetchStatus.consecutiveFailures || 0) >= 2;
-  const fetchStatusText = fetchStatus.status === 'success'
-    ? `Updated ${formatDateTime(fetchStatus.finishedAt)}`
-    : fetchStatus.status === 'failure'
-      ? `Fetch lỗi ${Number(fetchStatus.consecutiveFailures || 0)} lần`
-      : 'Waiting for first fetch status';
+  const activeReadingProgress = activeArticle ? getArticleProgress(activeArticle.id) : 0;
+
+  useEffect(() => {
+    if (!activeArticle?.id) return;
+    const articleId = activeArticle.id;
+    const openTimeoutId = window.setTimeout(() => markArticleOpened(articleId), 0);
+    let frameId: number | null = null;
+
+    const recordReadingProgress = () => {
+      if (frameId !== null) return;
+      frameId = window.requestAnimationFrame(() => {
+        const scrollableHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = scrollableHeight > 0 ? (window.scrollY / scrollableHeight) * 100 : 100;
+        updateArticleProgress(articleId, progress);
+        frameId = null;
+      });
+    };
+
+    recordReadingProgress();
+    window.addEventListener('scroll', recordReadingProgress, { passive: true });
+    return () => {
+      window.clearTimeout(openTimeoutId);
+      window.removeEventListener('scroll', recordReadingProgress);
+      if (frameId !== null) window.cancelAnimationFrame(frameId);
+    };
+  }, [activeArticle?.id, markArticleOpened, updateArticleProgress]);
 
   const handleShareArticle = async () => {
     if (!activeArticle) return;
@@ -130,6 +155,12 @@ export default function Journal({ isZenMode }: JournalProps) {
 
   return (
     <div className="relative min-h-screen w-full flex flex-col pt-32 pb-40 px-6 z-10">
+      {activeArticle ? (
+        <div className="fixed inset-x-0 top-0 z-[70] h-0.5 bg-white/5">
+          <div className="h-full bg-white/80 transition-[width] duration-300" style={{ width: `${activeReadingProgress}%` }} />
+        </div>
+      ) : null}
+
       <div className="fixed inset-0 bg-background z-[-2]" />
 
       <AmbientVideo
@@ -171,6 +202,7 @@ export default function Journal({ isZenMode }: JournalProps) {
                     onClick={() => {
                       setSelectedSignal(signal.key);
                       setCurrentPage(1);
+                      setShowHistoryOnly(false);
                     }}
                     className={`px-5 py-2 rounded-full text-sm transition-all duration-300 ${
                       selectedSignal === signal.key
@@ -183,7 +215,7 @@ export default function Journal({ isZenMode }: JournalProps) {
                 ))}
               </div>
 
-              <div className="grid gap-3 md:grid-cols-[1fr_auto] mb-5">
+              <div className="grid gap-3 md:grid-cols-[1fr_auto_auto]">
                 <label className="liquid-glass flex h-12 min-w-0 items-center gap-3 rounded-full px-5 text-muted-foreground focus-within:text-foreground">
                   <Search size={17} className="shrink-0" />
                   <input
@@ -214,6 +246,7 @@ export default function Journal({ isZenMode }: JournalProps) {
                 <button
                   onClick={() => {
                     setShowSavedOnly((value) => !value);
+                    setShowHistoryOnly(false);
                     setCurrentPage(1);
                   }}
                   className={`liquid-glass liquid-glass-interactive flex h-12 items-center justify-center gap-2 rounded-full px-5 text-sm ${
@@ -224,19 +257,23 @@ export default function Journal({ isZenMode }: JournalProps) {
                   {showSavedOnly ? <BookmarkCheck size={17} /> : <Bookmark size={17} />}
                   <span>Saved {bookmarkedIds.length}</span>
                 </button>
-              </div>
 
-              <Link
-                to="/status"
-                className={`inline-flex max-w-full items-center gap-2 rounded-full px-4 py-2 text-xs font-mono transition-colors ${
-                  hasFetchWarning
-                    ? 'bg-amber-400/10 text-amber-100 hover:text-foreground'
-                    : 'bg-white/5 text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {hasFetchWarning ? <AlertTriangle size={14} /> : fetchStatus.status === 'success' ? <CheckCircle2 size={14} /> : <RefreshCw size={14} />}
-                <span className="truncate">{fetchStatusText}</span>
-              </Link>
+                <button
+                  onClick={() => {
+                    setShowHistoryOnly((value) => !value);
+                    setShowSavedOnly(false);
+                    setSelectedSignal('latest');
+                    setCurrentPage(1);
+                  }}
+                  className={`liquid-glass liquid-glass-interactive flex h-12 items-center justify-center gap-2 rounded-full px-5 text-sm ${
+                    showHistoryOnly ? 'liquid-glass-active text-foreground' : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                  aria-pressed={showHistoryOnly}
+                >
+                  <History size={17} />
+                  <span>History {history.length}</span>
+                </button>
+              </div>
             </header>
 
             {isLoading && (
@@ -260,59 +297,67 @@ export default function Journal({ isZenMode }: JournalProps) {
 
             {!isLoading && !error && (
               <div className="space-y-12">
-                {paginatedArticles.map((article, idx) => (
-                  <article
-                    key={article.id}
-                    className="group cursor-pointer border-b border-border/40 pb-12 animate-[fade-rise_0.6s_ease-out]"
-                    style={{ animationDelay: `${(idx % 10) * 0.1}s`, animationFillMode: 'both' }}
-                    onClick={() => {
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                      navigate(`/journal/${encodeURIComponent(article.id)}`);
-                    }}
-                  >
-                    <div className="mb-4 flex items-start justify-between gap-4">
-                      <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground font-mono">
-                        <span className="flex items-center gap-1"><Calendar size={12} /> {article.date}</span>
-                        <span className="flex items-center gap-1"><Clock size={12} /> {article.readTime}</span>
+                {paginatedArticles.map((article, idx) => {
+                  const readingProgress = getArticleProgress(article.id);
+                  return (
+                    <article
+                      key={article.id}
+                      className="group cursor-pointer border-b border-border/40 pb-12 animate-[fade-rise_0.6s_ease-out]"
+                      style={{ animationDelay: `${(idx % 10) * 0.1}s`, animationFillMode: 'both' }}
+                      onClick={() => {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        navigate(`/journal/${encodeURIComponent(article.id)}`);
+                      }}
+                    >
+                      <div className="mb-4 flex items-start justify-between gap-4">
+                        <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground font-mono">
+                          <span className="flex items-center gap-1"><Calendar size={12} /> {article.date}</span>
+                          <span className="flex items-center gap-1"><Clock size={12} /> {article.readTime}</span>
+                          {readingProgress > 0 ? <span>{readingProgress}% read</span> : null}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            toggleBookmark(article.id);
+                          }}
+                          className={`liquid-glass liquid-glass-interactive flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
+                            isBookmarked(article.id) ? 'liquid-glass-active text-foreground' : 'text-muted-foreground hover:text-foreground'
+                          }`}
+                          aria-label={isBookmarked(article.id) ? 'Remove saved article' : 'Save article'}
+                          aria-pressed={isBookmarked(article.id)}
+                          title={isBookmarked(article.id) ? 'Remove saved article' : 'Save article'}
+                        >
+                          {isBookmarked(article.id) ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}
+                        </button>
                       </div>
-                      <button
-                        type="button"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          toggleBookmark(article.id);
-                        }}
-                        className={`liquid-glass liquid-glass-interactive flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
-                          isBookmarked(article.id) ? 'liquid-glass-active text-foreground' : 'text-muted-foreground hover:text-foreground'
-                        }`}
-                        aria-label={isBookmarked(article.id) ? 'Remove saved article' : 'Save article'}
-                        aria-pressed={isBookmarked(article.id)}
-                        title={isBookmarked(article.id) ? 'Remove saved article' : 'Save article'}
-                      >
-                        {isBookmarked(article.id) ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}
-                      </button>
-                    </div>
 
-                    <h2 className="text-3xl md:text-4xl font-semibold text-foreground mb-4 group-hover:text-primary/80 transition-colors" style={{ fontFamily: "'Noto Serif Display', serif" }}>
-                      {article.title}
-                    </h2>
+                      <h2 className="text-3xl md:text-4xl font-semibold text-foreground mb-4 group-hover:text-primary/80 transition-colors" style={{ fontFamily: "'Noto Serif Display', serif" }}>
+                        {article.title}
+                      </h2>
 
-                    <p className="text-muted-foreground text-base leading-relaxed mb-6">
-                      {article.excerpt}
-                    </p>
+                      <p className="text-muted-foreground text-base leading-relaxed mb-6">
+                        {article.excerpt}
+                      </p>
 
-                    <div className="flex flex-wrap gap-2">
-                      {article.tags?.map((tag) => (
-                        <span key={tag} className="text-xs px-3 py-1 rounded-full bg-white/5 text-muted-foreground">
-                          {displayTagLabel(tag)}
-                        </span>
-                      ))}
-                    </div>
-                  </article>
-                ))}
+                      <div className="flex flex-wrap gap-2">
+                        {article.tags?.map((tag) => (
+                          <span key={tag} className="text-xs px-3 py-1 rounded-full bg-white/5 text-muted-foreground">
+                            {displayTagLabel(tag)}
+                          </span>
+                        ))}
+                      </div>
+                    </article>
+                  );
+                })}
 
                 {filteredArticles.length === 0 && (
                   <p className="text-muted-foreground italic text-center py-12">
-                    {showSavedOnly ? 'No saved articles match this view.' : 'No articles found in this lane.'}
+                    {showSavedOnly
+                      ? 'No saved articles match this view.'
+                      : showHistoryOnly
+                        ? 'Your reading history is still empty.'
+                        : 'No articles found in this lane.'}
                   </p>
                 )}
               </div>

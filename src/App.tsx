@@ -1,7 +1,6 @@
 import { Suspense, lazy, useMemo, useState } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import {
-  Activity,
   BookOpen,
   Disc3,
   Home as HomeIcon,
@@ -83,13 +82,11 @@ function Layout() {
 
   const isHome = location.pathname === '/';
   const isMixtapes = location.pathname === '/mixtapes';
-  const isStatus = location.pathname === '/status';
   const routeFallback = <div className="min-h-screen w-full" />;
   const mobileNavItems = [
     { to: '/', label: 'Home', icon: HomeIcon, active: isHome },
     { to: '/mixtapes', label: 'Music', icon: Radio, active: isMixtapes },
     { to: '/journal', label: 'Read', icon: BookOpen, active: location.pathname.startsWith('/journal') },
-    { to: '/status', label: 'Status', icon: Activity, active: isStatus },
     { to: '/about', label: 'About', icon: Info, active: location.pathname === '/about' },
   ];
 
@@ -118,9 +115,9 @@ function Layout() {
       ) : null}
 
       <div className="flex-1 flex flex-col relative w-full min-h-screen">
-        <nav className={`fixed top-4 left-4 right-4 z-50 grid min-h-[64px] grid-cols-[auto_1fr_auto] items-center gap-3 px-4 py-3 md:min-h-[72px] md:px-10 md:py-4 ${isHome ? 'max-w-[88rem]' : 'max-w-[72rem]'} mx-auto liquid-glass rounded-full transition-all duration-500 ${isZenMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-          <div className="flex min-w-[110px] justify-start md:min-w-[150px]">
-            <Link to="/" className="text-2xl text-foreground font-display sm:text-3xl">
+        <nav className={`fixed left-3 right-3 top-3 z-50 grid min-h-[56px] grid-cols-[auto_1fr_auto] items-center gap-2 px-3 py-2 md:left-4 md:right-4 md:top-4 md:min-h-[72px] md:gap-3 md:px-10 md:py-4 ${isHome ? 'max-w-[88rem]' : 'max-w-[72rem]'} mx-auto liquid-glass rounded-full transition-all duration-500 ${isZenMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+          <div className="flex min-w-0 justify-start md:min-w-[150px]">
+            <Link to="/" className="font-display text-xl text-foreground sm:text-2xl md:text-3xl">
               Savagers.
             </Link>
           </div>
@@ -129,7 +126,6 @@ function Layout() {
             <Link to="/" className={`text-sm transition-colors hover:text-foreground ${isHome ? 'text-foreground' : 'text-muted-foreground'}`}>Home</Link>
             <Link to="/mixtapes" className={`text-sm transition-colors hover:text-foreground ${isMixtapes ? 'text-foreground' : 'text-muted-foreground'}`}>Frequencies</Link>
             <Link to="/journal" className={`text-sm transition-colors hover:text-foreground ${location.pathname.startsWith('/journal') ? 'text-foreground' : 'text-muted-foreground'}`}>Chronicles</Link>
-            <Link to="/status" className={`text-sm transition-colors hover:text-foreground ${isStatus ? 'text-foreground' : 'text-muted-foreground'}`}>Status</Link>
             <Link to="/about" className={`text-sm transition-colors hover:text-foreground ${location.pathname === '/about' ? 'text-foreground' : 'text-muted-foreground'}`}>About</Link>
             <button
               onClick={toggleWhispers}
@@ -156,7 +152,7 @@ function Layout() {
 
             {isHome ? (
               <>
-                <button onClick={togglePlay} className="liquid-glass liquid-glass-interactive hidden rounded-full px-5 py-2.5 text-sm text-foreground cursor-pointer min-w-[92px] sm:flex sm:items-center sm:justify-center">
+                <button onClick={togglePlay} className="liquid-glass liquid-glass-interactive hidden rounded-full px-5 py-2.5 text-sm text-foreground cursor-pointer min-w-[92px] md:flex md:items-center md:justify-center">
                   {isPlaying ? 'Pause' : 'Tune In'}
                 </button>
                 <button onClick={togglePlay} className="text-foreground hover:text-muted-foreground transition-colors cursor-pointer flex h-10 w-10 items-center justify-center" aria-label="Toggle ambient sound">
@@ -168,7 +164,7 @@ function Layout() {
         </nav>
 
         <nav
-          className={`fixed left-3 right-3 z-50 grid grid-cols-5 gap-1 rounded-full px-2 py-2 md:hidden liquid-glass transition-all duration-500 ${isZenMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+          className={`fixed left-3 right-3 z-50 grid grid-cols-4 gap-1 rounded-full px-2 py-2 md:hidden liquid-glass transition-all duration-500 ${isZenMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
           style={{ bottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
           aria-label="Mobile navigation"
         >
@@ -205,9 +201,10 @@ function Layout() {
       {currentTrack && isMixtapes && (
         <div className={`fixed bottom-28 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-3xl z-40 bg-white/5 backdrop-blur-md border border-white/10 rounded-lg px-5 py-4 flex flex-col gap-4 items-stretch justify-between animate-fade-rise-center shadow-2xl transition-opacity duration-1000 md:bottom-8 md:z-50 md:w-[calc(100%-3rem)] md:flex-row md:items-center md:gap-0 md:rounded-2xl md:px-6 ${isZenMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
           <div className="flex items-center gap-4 md:w-1/3">
-            <div className="w-12 h-12 rounded bg-muted/50 flex items-center justify-center overflow-hidden relative">
+            <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded bg-muted/50">
+              {currentTrack.cover ? <img src={currentTrack.cover} alt="" className="absolute inset-0 h-full w-full object-cover opacity-50" /> : null}
               <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
-              <Disc3 size={20} className={`text-muted-foreground ${isPlaying ? 'animate-[spin_4s_linear_infinite]' : ''}`} />
+              <Disc3 size={20} className={`relative text-muted-foreground ${isPlaying ? 'animate-[spin_4s_linear_infinite]' : ''}`} />
             </div>
             <div>
               <h4 className="text-foreground text-sm font-medium">{currentTrack.name}</h4>

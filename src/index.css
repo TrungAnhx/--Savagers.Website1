@@ -42,6 +42,10 @@
   transition: transform 0.3s ease;
 }
 
+.liquid-glass.fixed {
+  position: fixed;
+}
+
 .liquid-glass-active {
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.035)),

@@ -6,6 +6,7 @@ export interface Track {
   duration: string;
   artist: string;
   url: string;
+  cover?: string;
 }
 
 type RepeatMode = 'none' | 'all' | 'one';

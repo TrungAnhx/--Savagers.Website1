@@ -8,11 +8,14 @@ The project is currently hosted on Vercel and is designed as a static frontend a
 
 - Cinematic fullscreen video backgrounds across the main routes.
 - Journal archive with up to 100 curated articles from Spiderum and txnam.
+- Daily article picks that rotate predictably once per day.
 - Article detail view with sanitized HTML rendering.
+- Browser-local reading history and article progress tracking.
 - Fallback UI for articles whose full content is not available in the local archive.
 - Long URL and media overflow protection inside article content.
 - Browser-friendly Journal navigation so Back returns to the article list.
 - Music and mixtape experience with playlist, shuffle, repeat, volume, mute, and persisted player preferences.
+- JSON-driven music metadata so contributors can add tracks without editing React components.
 - Floating ambient notes, including user-added local notes stored in `localStorage`.
 - Responsive layout built with Tailwind CSS.
 - Display typography tuned for Vietnamese titles through `Noto Serif Display`.
@@ -37,7 +40,8 @@ The project is currently hosted on Vercel and is designed as a static frontend a
 │   ├── backgrounds/        # Video backgrounds served directly
 │   ├── data/
 │   │   ├── articles.json   # Article metadata index
-│   │   └── articles/       # Per-article HTML content payloads
+│   │   ├── articles/       # Per-article HTML content payloads
+│   │   └── tracks.json     # Music categories and track metadata
 │   ├── musics/             # Audio tracks served directly
 │   └── eagle.png           # Site icon asset
 ├── scripts/
@@ -197,10 +201,26 @@ Examples:
 public/backgrounds/bg1.mp4        -> /backgrounds/bg1.mp4
 public/musics/track1.mp3          -> /musics/track1.mp3
 public/data/articles.json         -> /data/articles.json
+public/data/tracks.json           -> /data/tracks.json
 public/eagle.png                  -> /eagle.png
 ```
 
 When adding large audio or video files, keep an eye on repository size and Vercel bandwidth. Prefer compressed MP4 and MP3 assets that are already web-ready.
+
+### Adding Music
+
+Music files stay in `public/musics/`, while playlist metadata lives in:
+
+```text
+public/data/tracks.json
+```
+
+To add a song:
+
+1. Upload a web-ready MP3 such as `public/musics/track11.mp3`.
+2. Add its `name`, `artist`, `duration`, and `/musics/track11.mp3` URL to the intended category in `tracks.json`.
+3. Optionally set a `cover` URL for the song or category. The site falls back to `/eagle.png`.
+4. Commit and push. Vercel will redeploy from `main`.
 
 ## Styling Notes
 
@@ -223,6 +243,7 @@ The app stores a few user preferences locally in the browser:
 | `savagers_repeatMode` | Audio repeat mode |
 | `savagers_volume` | Current audio volume |
 | `savagers_previousVolume` | Volume value restored after mute |
+| `savagers_reading_history` | Recently opened articles and local reading progress |
 
 ## Deployment
 

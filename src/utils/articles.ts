@@ -137,8 +137,25 @@ export function sortArticlesForJournal(articles: Article[], signal: ArticleSigna
   return sortArticlesByNewest(cappedArticles);
 }
 
-export function getFeaturedTodayArticles(articles: Article[]) {
+function getLocalDayKey(date: Date) {
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, '0'),
+    String(date.getDate()).padStart(2, '0'),
+  ].join('-');
+}
+
+function hashString(value: string) {
+  let hash = 0;
+  for (let index = 0; index < value.length; index += 1) {
+    hash = (hash * 31 + value.charCodeAt(index)) >>> 0;
+  }
+  return hash;
+}
+
+export function getFeaturedTodayArticles(articles: Article[], date = new Date()) {
   const cappedArticles = limitArchive(articles);
+  const dayKey = getLocalDayKey(date);
   const buckets: Array<{ signal: Exclude<ArticleSignal, 'latest'>; label: string }> = [
     { signal: 'tech', label: 'Tech Signal' },
     { signal: 'life', label: 'Lối sống' },
@@ -148,8 +165,10 @@ export function getFeaturedTodayArticles(articles: Article[]) {
   const featured: Array<{ article: Article; label: string; signal: Exclude<ArticleSignal, 'latest'> }> = [];
 
   buckets.forEach(({ signal, label }) => {
-    const article = cappedArticles.find((item) => !usedIds.has(item.id) && getArticleSignal(item) === signal)
-      ?? cappedArticles.find((item) => !usedIds.has(item.id));
+    const matchingArticles = cappedArticles.filter((item) => !usedIds.has(item.id) && getArticleSignal(item) === signal);
+    const fallbackArticles = cappedArticles.filter((item) => !usedIds.has(item.id));
+    const candidates = matchingArticles.length > 0 ? matchingArticles : fallbackArticles;
+    const article = candidates[hashString(`${dayKey}-${signal}`) % candidates.length];
     if (!article) return;
     usedIds.add(article.id);
     featured.push({ article, label, signal });
