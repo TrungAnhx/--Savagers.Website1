@@ -13,16 +13,14 @@
   },
   "counts": {
     "spiderumFetched": 16,
-    "spiderumStored": 91,
-    "txnamFresh": 9,
-    "txnamStored": 9,
+    "spiderumStored": 90,
+    "txnamFresh": 10,
+    "txnamStored": 10,
     "totalStored": 100
   },
-  "startedAt": "2026-06-05T03:45:40.237Z",
-  "finishedAt": "2026-06-05T03:47:37.445Z",
-  "lastSuccessAt": "2026-06-05T03:47:37.445Z",
+  "startedAt": "2026-06-06T03:30:50.306Z",
+  "finishedAt": "2026-06-06T03:31:38.511Z",
+  "lastSuccessAt": "2026-06-06T03:31:38.511Z",
   "consecutiveFailures": 0,
-  "warnings": [
-    "Failed to fetch txnam article https://txnam.net/kien-truc-dep-phan-1.html: Request timed out after 25000ms"
-  ]
+  "warnings": []
 }
