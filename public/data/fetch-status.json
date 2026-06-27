@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "status": "success",
-  "message": "Article archive refreshed.",
+  "status": "failure",
+  "message": "No Spiderum articles found. Failed sources: Skipping Spiderum source https://spiderum.com/nguoi-dung/spiderum: Request failed for https://spiderum.com/nguoi-dung/spiderum: 503 | Skipping Spiderum source https://spiderum.com/danh-muc/khoa-hoc-cong-nghe: Request failed for https://spiderum.com/danh-muc/khoa-hoc-cong-nghe: 503 | Skipping Spiderum source https://spiderum.com/danh-muc/quan-diem-tranh-luan: Request failed for https://spiderum.com/danh-muc/quan-diem-tranh-luan: 503 | Skipping Spiderum source https://spiderum.com/danh-muc/life-style: Request failed for https://spiderum.com/danh-muc/life-style: 503",
   "sourceUrls": {
     "spiderum": [
       "https://spiderum.com/nguoi-dung/spiderum",
@@ -12,15 +12,16 @@
     "txnam": "https://txnam.net"
   },
   "counts": {
-    "spiderumFetched": 16,
-    "spiderumStored": 90,
-    "txnamFresh": 10,
-    "txnamStored": 10,
-    "totalStored": 100
+    "totalStored": 0
   },
-  "startedAt": "2026-06-26T03:41:23.232Z",
-  "finishedAt": "2026-06-26T03:41:57.793Z",
+  "startedAt": "2026-06-27T03:28:09.282Z",
+  "finishedAt": "2026-06-27T03:28:31.694Z",
   "lastSuccessAt": "2026-06-26T03:41:57.793Z",
-  "consecutiveFailures": 0,
-  "warnings": []
+  "consecutiveFailures": 1,
+  "warnings": [
+    "Skipping Spiderum source https://spiderum.com/nguoi-dung/spiderum: Request failed for https://spiderum.com/nguoi-dung/spiderum: 503",
+    "Skipping Spiderum source https://spiderum.com/danh-muc/khoa-hoc-cong-nghe: Request failed for https://spiderum.com/danh-muc/khoa-hoc-cong-nghe: 503",
+    "Skipping Spiderum source https://spiderum.com/danh-muc/quan-diem-tranh-luan: Request failed for https://spiderum.com/danh-muc/quan-diem-tranh-luan: 503",
+    "Skipping Spiderum source https://spiderum.com/danh-muc/life-style: Request failed for https://spiderum.com/danh-muc/life-style: 503"
+  ]
 }
