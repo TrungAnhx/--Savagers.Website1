@@ -152,6 +152,42 @@ function readStoredArticleContent(article) {
   }
 }
 
+function storedArticlesForSource(articles, source) {
+  return articles
+    .filter((article) => article?.source === source && typeof article.link === 'string')
+    .map((article) => ({
+      ...article,
+      content: readStoredArticleContent(article),
+      source,
+    }));
+}
+
+function readExistingArticles() {
+  try {
+    const articles = JSON.parse(fs.readFileSync(OUTPUT_PATH, 'utf8'));
+    return Array.isArray(articles) ? articles : [];
+  } catch {
+    return [];
+  }
+}
+
+function countStoredArticles(articles) {
+  const safeArticles = Array.isArray(articles) ? articles : [];
+  return safeArticles.reduce(
+    (counts, article) => {
+      if (article?.source === 'spiderum') counts.spiderumStored += 1;
+      if (article?.source === 'txnam') counts.txnamStored += 1;
+      counts.totalStored += 1;
+      return counts;
+    },
+    {
+      spiderumStored: 0,
+      txnamStored: 0,
+      totalStored: 0,
+    }
+  );
+}
+
 function articleMetadata(article) {
   const { content, ...metadata } = article;
   return metadata;
@@ -781,24 +817,25 @@ async function fetchTxnamArticles() {
 }
 
 async function main() {
-  let existingArticles = [];
+  const existingArticles = readExistingArticles();
+
+  const existingSpiderumArticles = storedArticlesForSource(existingArticles, 'spiderum');
+  const existingTxnamArticles = storedArticlesForSource(existingArticles, 'txnam');
+  let freshSpiderumArticles = [];
+  let usedStoredSpiderumFallback = false;
+
   try {
-    existingArticles = JSON.parse(fs.readFileSync(OUTPUT_PATH, 'utf8'));
-  } catch {
-    existingArticles = [];
+    freshSpiderumArticles = await fetchSpiderumArticles();
+  } catch (error) {
+    if (existingSpiderumArticles.length === 0) throw error;
+    usedStoredSpiderumFallback = true;
+    logWarning(`Keeping ${existingSpiderumArticles.length} stored Spiderum articles because fresh Spiderum fetch failed: ${errorMessage(error)}`);
   }
 
-  const spiderumArticles = await fetchSpiderumArticles();
   const freshTxnamArticles = await fetchTxnamArticles();
-  const existingSpiderumArticles = existingArticles.filter((article) => article?.source === 'spiderum' && typeof article.link === 'string');
-  const existingTxnamArticles = existingArticles.filter((article) => article?.source === 'txnam' && typeof article.link === 'string');
   const txnamArticles = freshTxnamArticles.length > 0
     ? freshTxnamArticles
-    : existingTxnamArticles.map((article) => ({
-        ...article,
-        content: readStoredArticleContent(article),
-        source: 'txnam',
-      }));
+    : existingTxnamArticles;
 
   if (freshTxnamArticles.length === 0 && existingTxnamArticles.length > 0) {
     logWarning(`Keeping ${existingTxnamArticles.length} stored txnam articles because no fresh txnam articles were fetched.`);
@@ -806,8 +843,11 @@ async function main() {
 
   const spiderumArchive = [];
   const seenSpiderumLinks = new Set();
+  const spiderumArticles = usedStoredSpiderumFallback
+    ? existingSpiderumArticles
+    : [...freshSpiderumArticles, ...existingSpiderumArticles];
 
-  [...spiderumArticles, ...existingSpiderumArticles].forEach((article) => {
+  spiderumArticles.forEach((article) => {
     if (!article?.link || seenSpiderumLinks.has(article.link)) return;
     seenSpiderumLinks.add(article.link);
     spiderumArchive.push({
@@ -843,13 +883,15 @@ async function main() {
   fs.writeFileSync(OUTPUT_PATH, JSON.stringify(mergedArticles.map(articleMetadata), null, 2) + '\n', 'utf8');
   writeFetchStatus({
     status: 'success',
-    message: 'Article archive refreshed.',
+    message: usedStoredSpiderumFallback
+      ? 'Article archive kept from stored Spiderum content because fresh Spiderum fetch failed.'
+      : 'Article archive refreshed.',
     sourceUrls: {
       spiderum: SOURCE_URLS,
       txnam: TXNAM_SOURCE_URL,
     },
     counts: {
-      spiderumFetched: spiderumArticles.length,
+      spiderumFetched: usedStoredSpiderumFallback ? 0 : freshSpiderumArticles.length,
       spiderumStored: Math.min(spiderumArchive.length, spiderumLimit),
       txnamFresh: freshTxnamArticles.length,
       txnamStored: txnamArticles.length,
@@ -862,6 +904,7 @@ async function main() {
 main().catch((error) => {
   console.error(error);
   try {
+    const storedCounts = countStoredArticles(readExistingArticles());
     writeFetchStatus({
       status: 'failure',
       message: errorMessage(error),
@@ -869,9 +912,7 @@ main().catch((error) => {
         spiderum: SOURCE_URLS,
         txnam: TXNAM_SOURCE_URL,
       },
-      counts: {
-        totalStored: 0,
-      },
+      counts: storedCounts,
     });
   } catch (statusError) {
     console.error(`Failed to write fetch status: ${errorMessage(statusError)}`);
