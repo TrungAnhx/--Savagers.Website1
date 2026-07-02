@@ -14,10 +14,10 @@
   "counts": {
     "totalStored": 0
   },
-  "startedAt": "2026-07-01T03:54:28.996Z",
-  "finishedAt": "2026-07-01T03:54:52.767Z",
+  "startedAt": "2026-07-02T03:35:27.090Z",
+  "finishedAt": "2026-07-02T03:35:48.449Z",
   "lastSuccessAt": "2026-06-26T03:41:57.793Z",
-  "consecutiveFailures": 5,
+  "consecutiveFailures": 6,
   "warnings": [
     "Skipping Spiderum source https://spiderum.com/nguoi-dung/spiderum: Request failed for https://spiderum.com/nguoi-dung/spiderum: 503",
     "Skipping Spiderum source https://spiderum.com/danh-muc/khoa-hoc-cong-nghe: Request failed for https://spiderum.com/danh-muc/khoa-hoc-cong-nghe: 503",
