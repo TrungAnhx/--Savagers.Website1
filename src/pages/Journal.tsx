@@ -165,8 +165,8 @@ export default function Journal({ isZenMode }: JournalProps) {
 
       <AmbientVideo
         src={currentBg}
-        className="fixed inset-0 w-full h-full object-cover z-[-1] opacity-60"
-        opacityClassName="fixed inset-0 bg-gradient-to-b from-background/90 via-background/40 to-background/90 z-[-1] pointer-events-none"
+        className="fixed inset-0 w-full h-full object-cover z-[-1] opacity-45"
+        opacityClassName="fixed inset-0 bg-gradient-to-b from-background/95 via-background/70 to-background/95 z-[-1] pointer-events-none"
       />
 
       <div className={`max-w-3xl mx-auto w-full relative transition-opacity duration-1000 ${isZenMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
@@ -302,7 +302,7 @@ export default function Journal({ isZenMode }: JournalProps) {
                   return (
                     <article
                       key={article.id}
-                      className="group cursor-pointer border-b border-border/40 pb-12 animate-[fade-rise_0.6s_ease-out]"
+                      className="article-list-card group cursor-pointer animate-[fade-rise_0.6s_ease-out]"
                       style={{ animationDelay: `${(idx % 10) * 0.1}s`, animationFillMode: 'both' }}
                       onClick={() => {
                         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -310,7 +310,7 @@ export default function Journal({ isZenMode }: JournalProps) {
                       }}
                     >
                       <div className="mb-4 flex items-start justify-between gap-4">
-                        <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground font-mono">
+                        <div className="article-meta-line flex flex-wrap items-center gap-4 text-xs font-mono">
                           <span className="flex items-center gap-1"><Calendar size={12} /> {article.date}</span>
                           <span className="flex items-center gap-1"><Clock size={12} /> {article.readTime}</span>
                           {readingProgress > 0 ? <span>{readingProgress}% read</span> : null}
@@ -342,7 +342,7 @@ export default function Journal({ isZenMode }: JournalProps) {
 
                       <div className="flex flex-wrap gap-2">
                         {article.tags?.map((tag) => (
-                          <span key={tag} className="text-xs px-3 py-1 rounded-full bg-white/5 text-muted-foreground">
+                          <span key={tag} className="article-tag-pill text-xs px-3 py-1 rounded-full">
                             {displayTagLabel(tag)}
                           </span>
                         ))}
@@ -395,7 +395,7 @@ export default function Journal({ isZenMode }: JournalProps) {
 
           </div>
         ) : (
-          <article className="animate-[fade-rise_0.6s_ease-out]">
+          <article className="reader-shell animate-[fade-rise_0.6s_ease-out]">
             <button
               onClick={() => {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -408,11 +408,11 @@ export default function Journal({ isZenMode }: JournalProps) {
             </button>
 
             <header className="mb-16">
-              <h1 className="text-5xl md:text-7xl font-semibold text-foreground mb-8 leading-[1.12]" style={{ fontFamily: "'Noto Serif Display', serif" }}>
+              <h1 className="text-4xl sm:text-5xl md:text-7xl font-semibold text-foreground mb-8 leading-[1.08] sm:leading-[1.12]" style={{ fontFamily: "'Noto Serif Display', serif" }}>
                 {activeArticle.title}
               </h1>
 
-              <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground font-mono border-y border-border/40 py-6">
+              <div className="reader-meta flex flex-wrap items-center gap-6 text-sm text-muted-foreground font-mono">
                 <span className="flex items-center gap-2"><Calendar size={14} /> {activeArticle.date}</span>
                 <span className="flex items-center gap-2"><Clock size={14} /> {activeArticle.readTime}</span>
                 {activeArticle.link && (
@@ -456,7 +456,7 @@ export default function Journal({ isZenMode }: JournalProps) {
 
             {!isArticleContentLoading && !articleContentError && hasReadableContent && (
               <div
-                className="article-content prose prose-invert prose-lg max-w-none
+                className="article-content reader-prose prose prose-invert prose-lg max-w-none
               prose-p:text-muted-foreground prose-p:leading-relaxed prose-p:mb-8
               prose-headings:text-foreground prose-headings:font-semibold prose-headings:mt-12 prose-headings:mb-6
               prose-headings:font-display [&>h3]:text-3xl

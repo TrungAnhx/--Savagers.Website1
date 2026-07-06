@@ -1,4 +1,4 @@
-import { Suspense, lazy, useMemo, useState } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import {
   BookOpen,
@@ -52,6 +52,11 @@ function Layout() {
 
   const allNotes = useMemo(() => [...notesData, ...customNotes], [customNotes]);
   const location = useLocation();
+  const isReadingArticle = /^\/journal\/[^/]+/.test(location.pathname);
+  const [isChromeHidden, setIsChromeHidden] = useState(false);
+  const chromeHiddenRef = useRef(false);
+  const lastScrollYRef = useRef(0);
+  const scrollFrameRef = useRef<number | null>(null);
 
   const {
     audioRef,
@@ -96,6 +101,78 @@ function Layout() {
     setStoredItem('savagers_showWhispers', JSON.stringify(nextValue));
   };
 
+  const revealChrome = () => {
+    if (!chromeHiddenRef.current) return;
+    chromeHiddenRef.current = false;
+    setIsChromeHidden(false);
+  };
+
+  useEffect(() => {
+    if (!isReadingArticle) {
+      chromeHiddenRef.current = false;
+      return;
+    }
+
+    lastScrollYRef.current = window.scrollY;
+    let resetFrameId: number | null = null;
+
+    if (window.scrollY < 120 && chromeHiddenRef.current) {
+      chromeHiddenRef.current = false;
+      resetFrameId = window.requestAnimationFrame(() => {
+        setIsChromeHidden(false);
+      });
+    }
+
+    const updateChromeHidden = (nextHidden: boolean) => {
+      if (chromeHiddenRef.current === nextHidden) return;
+      chromeHiddenRef.current = nextHidden;
+      setIsChromeHidden(nextHidden);
+    };
+
+    const handleScroll = () => {
+      if (scrollFrameRef.current !== null) return;
+
+      scrollFrameRef.current = window.requestAnimationFrame(() => {
+        const currentScrollY = window.scrollY;
+        const scrollDelta = currentScrollY - lastScrollYRef.current;
+
+        if (currentScrollY < 120 || scrollDelta < -8) {
+          updateChromeHidden(false);
+        } else if (scrollDelta > 8 && currentScrollY > 220) {
+          updateChromeHidden(true);
+        }
+
+        lastScrollYRef.current = currentScrollY;
+        scrollFrameRef.current = null;
+      });
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (resetFrameId !== null) {
+        window.cancelAnimationFrame(resetFrameId);
+      }
+      if (scrollFrameRef.current !== null) {
+        window.cancelAnimationFrame(scrollFrameRef.current);
+        scrollFrameRef.current = null;
+      }
+    };
+  }, [isReadingArticle]);
+
+  const effectiveChromeHidden = isReadingArticle && isChromeHidden;
+  const topNavVisibilityClass = isZenMode
+    ? 'opacity-0 pointer-events-none -translate-y-6'
+    : effectiveChromeHidden
+      ? 'opacity-0 pointer-events-none -translate-y-[calc(100%+1.25rem)]'
+      : 'opacity-100 translate-y-0';
+
+  const bottomNavVisibilityClass = isZenMode
+    ? 'opacity-0 pointer-events-none translate-y-6'
+    : effectiveChromeHidden
+      ? 'opacity-0 pointer-events-none translate-y-24'
+      : 'opacity-100 translate-y-0';
+
   return (
     <div className={`relative min-h-screen w-full flex flex-col text-foreground ${isZenMode ? '' : 'bg-background'}`}>
       <audio
@@ -115,47 +192,58 @@ function Layout() {
       ) : null}
 
       <div className="flex-1 flex flex-col relative w-full min-h-screen">
-        <nav className={`fixed left-3 right-3 top-3 z-50 grid min-h-[56px] grid-cols-[auto_1fr_auto] items-center gap-2 px-3 py-2 md:left-4 md:right-4 md:top-4 md:min-h-[72px] md:gap-3 md:px-10 md:py-4 ${isHome ? 'max-w-[88rem]' : 'max-w-[72rem]'} mx-auto liquid-glass rounded-full transition-all duration-500 ${isZenMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-          <div className="flex min-w-0 justify-start md:min-w-[150px]">
+        {isReadingArticle ? (
+          <div
+            className={`fixed inset-x-0 top-0 z-[49] h-24 ${isChromeHidden && !isZenMode ? 'pointer-events-auto' : 'pointer-events-none'}`}
+            onMouseEnter={revealChrome}
+            aria-hidden="true"
+          />
+        ) : null}
+
+        <nav
+          className={`fixed left-3 right-3 top-3 z-50 mx-auto grid min-h-[56px] max-w-[88rem] grid-cols-[1fr_auto] items-center gap-2 rounded-full px-3 py-2 md:left-4 md:right-4 md:top-4 md:min-h-[72px] md:grid-cols-[minmax(9rem,1fr)_auto_minmax(9rem,1fr)] md:gap-4 md:px-10 md:py-4 liquid-glass transition-[opacity,transform,box-shadow,background] duration-500 ease-out ${topNavVisibilityClass}`}
+          onMouseEnter={revealChrome}
+          onFocusCapture={revealChrome}
+        >
+          <div className="flex min-w-0 justify-start">
             <Link to="/" className="font-display text-xl text-foreground sm:text-2xl md:text-3xl">
               Savagers.
             </Link>
           </div>
 
-          <div className={`hidden md:flex items-center justify-center ${isHome ? 'gap-8 lg:gap-9' : 'gap-7 lg:gap-8'}`}>
+          <div className="hidden items-center justify-center gap-6 md:flex lg:gap-8">
             <Link to="/" className={`text-sm transition-colors hover:text-foreground ${isHome ? 'text-foreground' : 'text-muted-foreground'}`}>Home</Link>
             <Link to="/mixtapes" className={`text-sm transition-colors hover:text-foreground ${isMixtapes ? 'text-foreground' : 'text-muted-foreground'}`}>Frequencies</Link>
             <Link to="/journal" className={`text-sm transition-colors hover:text-foreground ${location.pathname.startsWith('/journal') ? 'text-foreground' : 'text-muted-foreground'}`}>Chronicles</Link>
             <Link to="/about" className={`text-sm transition-colors hover:text-foreground ${location.pathname === '/about' ? 'text-foreground' : 'text-muted-foreground'}`}>About</Link>
+          </div>
+
+          <div className="flex min-w-0 items-center justify-end gap-2 md:gap-2.5 lg:gap-3">
             <button
               onClick={toggleWhispers}
-              className={`liquid-glass liquid-glass-interactive rounded-full px-4 py-2.5 text-sm cursor-pointer flex min-w-[112px] items-center justify-center gap-2 ${showWhispers ? 'liquid-glass-active text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+              className={`liquid-glass liquid-glass-interactive hidden rounded-full px-4 py-2.5 text-sm cursor-pointer md:flex min-w-[116px] items-center justify-center gap-2 ${showWhispers ? 'liquid-glass-active text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
               title={showWhispers ? 'Hide ambient notes' : 'Show ambient notes'}
               aria-label={showWhispers ? 'Hide ambient notes' : 'Show ambient notes'}
             >
               <MessageCircle size={17} />
               <span>{showWhispers ? 'Notes On' : 'Notes Off'}</span>
             </button>
-          </div>
 
-          <div className={`flex min-w-0 items-center justify-end gap-2 ${isHome ? 'md:min-w-[150px]' : 'md:min-w-0'}`}>
-            <div className="md:hidden">
-              <button
-                onClick={toggleWhispers}
-                className={`liquid-glass liquid-glass-interactive rounded-full px-3 py-2 text-sm cursor-pointer flex h-10 w-10 items-center justify-center ${showWhispers ? 'liquid-glass-active text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-                title={showWhispers ? 'Hide ambient notes' : 'Show ambient notes'}
-                aria-label={showWhispers ? 'Hide ambient notes' : 'Show ambient notes'}
-              >
-                <MessageCircle size={17} />
-              </button>
-            </div>
+            <button
+              onClick={toggleWhispers}
+              className={`liquid-glass liquid-glass-interactive rounded-full px-3 py-2 text-sm cursor-pointer flex h-10 w-10 items-center justify-center md:hidden ${showWhispers ? 'liquid-glass-active text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+              title={showWhispers ? 'Hide ambient notes' : 'Show ambient notes'}
+              aria-label={showWhispers ? 'Hide ambient notes' : 'Show ambient notes'}
+            >
+              <MessageCircle size={17} />
+            </button>
 
             {isHome ? (
               <>
                 <button onClick={togglePlay} className="liquid-glass liquid-glass-interactive hidden rounded-full px-5 py-2.5 text-sm text-foreground cursor-pointer min-w-[92px] md:flex md:items-center md:justify-center">
                   {isPlaying ? 'Pause' : 'Tune In'}
                 </button>
-                <button onClick={togglePlay} className="text-foreground hover:text-muted-foreground transition-colors cursor-pointer flex h-10 w-10 items-center justify-center" aria-label="Toggle ambient sound">
+                <button onClick={togglePlay} className="liquid-glass liquid-glass-interactive text-foreground hover:text-muted-foreground transition-colors cursor-pointer flex h-10 w-10 items-center justify-center rounded-full" aria-label="Toggle ambient sound">
                   {isPlaying ? <Volume2 size={20} /> : <VolumeX size={20} />}
                 </button>
               </>
@@ -164,7 +252,7 @@ function Layout() {
         </nav>
 
         <nav
-          className={`fixed left-3 right-3 z-50 grid grid-cols-4 gap-1 rounded-full px-2 py-2 md:hidden liquid-glass transition-all duration-500 ${isZenMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+          className={`fixed left-3 right-3 z-50 grid grid-cols-4 gap-1 rounded-full px-2 py-2 md:hidden liquid-glass transition-[opacity,transform] duration-500 ease-out ${bottomNavVisibilityClass}`}
           style={{ bottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
           aria-label="Mobile navigation"
         >

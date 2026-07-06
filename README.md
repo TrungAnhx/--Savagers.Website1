@@ -1,24 +1,21 @@
 # Savagers Website
 
-Savagers is a Vite, React, and TypeScript web app built as a calm digital space for reading, music, and focused browsing. The site combines an ambient landing experience, a curated journal archive, a mixtape player, floating notes, and an about page for the Savagers group.
+Savagers is a cinematic Vite + React + TypeScript website for reading, music, and quiet focus. The app combines full-screen ambient backgrounds, Liquid Glass navigation, a curated article archive, local reading history, floating notes, and a lightweight mixtape player.
 
-The project is currently hosted on Vercel and is designed as a static frontend app. Production output is generated into `dist/`.
+The production app is deployed as a static Vite site on Vercel. Pushing to the connected `main` branch triggers a redeploy.
 
-## Highlights
+## Core Experience
 
-- Cinematic fullscreen video backgrounds across the main routes.
-- Journal archive with up to 100 curated articles from Spiderum and txnam.
-- Daily article picks that rotate predictably once per day.
-- Article detail view with sanitized HTML rendering.
-- Browser-local reading history and article progress tracking.
-- Fallback UI for articles whose full content is not available in the local archive.
-- Long URL and media overflow protection inside article content.
-- Browser-friendly Journal navigation so Back returns to the article list.
-- Music and mixtape experience with playlist, shuffle, repeat, volume, mute, and persisted player preferences.
-- JSON-driven music metadata so contributors can add tracks without editing React components.
-- Floating ambient notes, including user-added local notes stored in `localStorage`.
-- Responsive layout built with Tailwind CSS.
-- Display typography tuned for Vietnamese titles through `Noto Serif Display`.
+- Full-screen video backgrounds with a dark cinematic visual direction.
+- Responsive Liquid Glass navigation with balanced desktop controls.
+- Auto-hiding reading chrome on article pages: scroll down to focus, scroll up or hover the top edge to reveal navigation.
+- Focused Journal reading surface with stronger contrast for bright or dark backgrounds.
+- Paginated archive capped at 100 articles.
+- Runtime-loaded article metadata and per-article content files to keep the app lighter.
+- Sanitized article HTML before rendering.
+- Local saved articles, reading history, and reading progress.
+- JSON-driven music playlists with shuffle, repeat, mute, volume, and persisted preferences.
+- Floating ambient notes that can be toggled and extended locally.
 
 ## Tech Stack
 
@@ -26,148 +23,80 @@ The project is currently hosted on Vercel and is designed as a static frontend a
 - TypeScript
 - Vite
 - React Router
-- Tailwind CSS
-- Tailwind Typography
+- Tailwind CSS + Tailwind Typography
 - Framer Motion
-- Lucide React icons
-- Cheerio for article scraping utilities
+- Lucide React
+- Cheerio for article-fetch utilities
 
 ## Project Structure
 
 ```text
 .
 ├── public/
-│   ├── backgrounds/        # Video backgrounds served directly
+│   ├── backgrounds/        # Video backgrounds served from /backgrounds
 │   ├── data/
 │   │   ├── articles.json   # Article metadata index
 │   │   ├── articles/       # Per-article HTML content payloads
+│   │   ├── fetch-status.json
 │   │   └── tracks.json     # Music categories and track metadata
-│   ├── musics/             # Audio tracks served directly
-│   └── eagle.png           # Site icon asset
+│   ├── musics/             # Audio files served from /musics
+│   └── eagle.png           # Favicon/app icon asset
 ├── scripts/
-│   └── fetch-spiderum.cjs  # Article collection/update script
+│   └── fetch-spiderum.cjs  # Spiderum/txnam archive updater
 ├── src/
 │   ├── components/         # Shared UI components
-│   ├── data/               # Local app data
-│   ├── hooks/              # Reusable React hooks
-│   ├── pages/              # Route-level pages
+│   ├── hooks/              # Audio, articles, bookmarks, history
+│   ├── pages/              # Home, Journal, Mixtapes, About, Status
 │   ├── types/              # Shared TypeScript types
-│   ├── utils/              # Article helpers and HTML sanitization
-│   ├── App.tsx             # App shell, routes, nav, audio player shell
-│   ├── index.css           # Tailwind layers and global CSS
+│   ├── utils/              # Sanitizing, article filters, formatting
+│   ├── App.tsx             # App shell, routes, nav, audio shell
+│   ├── index.css           # Theme, Liquid Glass, reading styles
 │   └── main.tsx            # React entrypoint
-├── dist/                   # Generated production build
-└── package.json
+└── dist/                   # Generated production build
 ```
 
-## Main Routes
+## Local Development
 
-| Route | Purpose |
-| --- | --- |
-| `/` | Landing experience with ambient hero and featured journal entries |
-| `/journal` | Paginated article archive and article reading view |
-| `/mixtapes` | Curated audio playlists and playback controls |
-| `/about` | Savagers story, values, and local floating note input |
-
-## Getting Started
-
-### Requirements
-
-- Node.js 20 or newer is recommended.
-- npm, using the checked-in `package-lock.json`.
-
-### Install Dependencies
+Install dependencies:
 
 ```bash
 npm install
 ```
 
-### Start Development Server
+Start the dev server:
 
 ```bash
 npm run dev
 ```
 
-Vite will print a local URL, usually:
-
-```text
-http://localhost:5173/
-```
-
-### Build Production Bundle
+Build the production bundle:
 
 ```bash
 npm run build
 ```
 
-This runs TypeScript project checks and writes the production bundle to `dist/`.
-
-### Preview Production Build
+Preview the production build:
 
 ```bash
 npm run preview
 ```
 
-### Lint
+Run lint checks:
 
 ```bash
 npm run lint
 ```
 
-## Available Scripts
+## Article Archive
 
-| Command | Description |
-| --- | --- |
-| `npm run dev` | Start Vite dev server with hot reload |
-| `npm run build` | Run `tsc -b` and create a production build |
-| `npm run preview` | Serve the built `dist/` output locally |
-| `npm run lint` | Run ESLint across the repository |
+The Journal uses a split data model:
 
-## Article Data
+- `public/data/articles.json` stores lightweight metadata.
+- `public/data/articles/{articleId}.json` stores full HTML content.
+- `src/hooks/useArticles.ts` loads metadata.
+- `src/hooks/useArticleContent.ts` loads full content only when an article is opened.
 
-The Journal reads article metadata from:
-
-```text
-public/data/articles.json
-```
-
-Each article detail loads its content from:
-
-```text
-public/data/articles/{articleId}.json
-```
-
-Expected article metadata shape:
-
-```ts
-interface Article {
-  id: string;
-  title: string;
-  date: string;
-  readTime: string;
-  excerpt: string;
-  tags: string[];
-  link?: string;
-  source?: 'spiderum' | 'txnam';
-}
-```
-
-Expected article content payload:
-
-```json
-{
-  "id": "article-id",
-  "content": "<p>Sanitized article HTML...</p>"
-}
-```
-
-The app sanitizes rendered HTML in `src/utils/sanitizeHtml.ts`. Blocked elements include scripts, styles, iframes, embeds, object tags, links, and meta tags. Image loading is set to lazy and async decoding is enabled.
-
-If a content file exists but has no readable content, the Journal shows a fallback message, the excerpt, and a link to the original source when available.
-
-## Updating Articles
-
-The scraping utility is:
+The fetch script is:
 
 ```bash
 node scripts/fetch-spiderum.cjs
@@ -175,79 +104,44 @@ node scripts/fetch-spiderum.cjs
 
 Useful environment variables:
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `SPIDERUM_SOURCE_URLS` | Spiderum profile and category URLs | Comma-separated Spiderum source pages |
-| `TXNAM_SOURCE_URL` | `https://txnam.net` | txnam source page |
-| `SPIDERUM_MAX_ARTICLES` | `28` | Max articles collected per Spiderum source |
-| `TXNAM_MAX_ARTICLES` | `10` | Max txnam articles collected |
-| `TOTAL_ARTICLE_LIMIT` | `100` | Max total archive items |
+| Variable | Purpose |
+| --- | --- |
+| `SPIDERUM_SOURCE_URLS` | Comma-separated Spiderum source pages |
+| `SPIDERUM_MAX_ARTICLES` | Maximum fresh Spiderum articles to pull |
+| `TXNAM_SOURCE_URL` | txnam source URL |
+| `TXNAM_MAX_ARTICLES` | Maximum txnam homepage articles to keep |
+| `TOTAL_ARTICLE_LIMIT` | Archive cap, currently 100 |
+| `FETCH_RETRY_ATTEMPTS` | Retry count for temporary source failures |
+| `FETCH_TIMEOUT_MS` | Request timeout in milliseconds |
 
-Example:
+GitHub Actions runs the same script through `.github/workflows/fetch-articles.yml`. If Spiderum is temporarily unavailable but stored Spiderum articles still exist, the script preserves the archive, records the stored counts, and exits successfully instead of breaking the site.
 
-```bash
-TOTAL_ARTICLE_LIMIT=100 node scripts/fetch-spiderum.cjs
-```
+## Music Workflow
 
-The script writes metadata to `public/data/articles.json` and per-article content files to `public/data/articles/`.
-
-## Media Assets
-
-Static assets in `public/` are served from the site root.
-
-Examples:
-
-```text
-public/backgrounds/bg1.mp4        -> /backgrounds/bg1.mp4
-public/musics/track1.mp3          -> /musics/track1.mp3
-public/data/articles.json         -> /data/articles.json
-public/data/tracks.json           -> /data/tracks.json
-public/eagle.png                  -> /eagle.png
-```
-
-When adding large audio or video files, keep an eye on repository size and Vercel bandwidth. Prefer compressed MP4 and MP3 assets that are already web-ready.
-
-### Adding Music
-
-Music files stay in `public/musics/`, while playlist metadata lives in:
+Audio files live in `public/musics/`. Playlist metadata lives in:
 
 ```text
 public/data/tracks.json
 ```
 
-To add a song:
+To add a track:
 
-1. Upload a web-ready MP3 such as `public/musics/track11.mp3`.
-2. Add its `name`, `artist`, `duration`, and `/musics/track11.mp3` URL to the intended category in `tracks.json`.
-3. Optionally set a `cover` URL for the song or category. The site falls back to `/eagle.png`.
-4. Commit and push. Vercel will redeploy from `main`.
+1. Add a web-ready MP3, for example `public/musics/track11.mp3`.
+2. Add the track metadata and `/musics/track11.mp3` URL to `tracks.json`.
+3. Run `npm run build`.
+4. Commit and push to `main` for Vercel redeploy.
+
+Large audio/video files increase repository size and Vercel bandwidth usage. Prefer compressed assets that are already web-ready.
 
 ## Styling Notes
 
-- Tailwind CSS is configured in `tailwind.config.js`.
-- Global theme variables live in `src/index.css`.
-- Display font is `Noto Serif Display`.
-- Body font is `Inter`.
-- Article typography uses Tailwind Typography plus `.article-content` overflow rules.
-- Reusable glass styling is implemented through `.liquid-glass` classes in `src/index.css`.
-
-## Local Storage Keys
-
-The app stores a few user preferences locally in the browser:
-
-| Key | Purpose |
-| --- | --- |
-| `savagers_showWhispers` | Whether floating notes are visible |
-| `savagers_notes` | User-added floating notes |
-| `savagers_isShuffle` | Audio shuffle setting |
-| `savagers_repeatMode` | Audio repeat mode |
-| `savagers_volume` | Current audio volume |
-| `savagers_previousVolume` | Volume value restored after mute |
-| `savagers_reading_history` | Recently opened articles and local reading progress |
+- Theme variables and Liquid Glass styles are in `src/index.css`.
+- Display typography uses `Noto Serif Display`; body text uses `Inter`.
+- Article pages use `.reader-shell`, `.reader-meta`, and `.reader-prose` for focused readability.
+- Repeated archive items use `.article-list-card` for a darker glass surface over changing backgrounds.
+- Keep background assets in `public/backgrounds/` and reference them with root-relative URLs.
 
 ## Deployment
-
-This app can be deployed as a standard Vite static site.
 
 Recommended Vercel settings:
 
@@ -258,71 +152,53 @@ Recommended Vercel settings:
 | Build Command | `npm run build` |
 | Output Directory | `dist` |
 
-Every push to the connected production branch, usually `main`, should trigger a Vercel redeploy.
+Every push to `main` should trigger a Vercel deployment when the GitHub repository is connected to Vercel.
 
-## Git Workflow
+## Quality Checklist
 
-Use Conventional Commit style:
-
-```text
-feat: add new user-visible feature
-fix: correct a bug or regression
-perf: improve runtime or loading performance
-docs: update documentation
-```
-
-Recommended pre-push checks:
+Before pushing:
 
 ```bash
 npm run lint
 npm run build
 ```
 
-## Release Workflow
+For UI changes, also verify:
 
-Create a version tag and GitHub Release when publishing a meaningful milestone.
+- Home nav spacing on desktop and mobile.
+- Journal list readability over multiple backgrounds.
+- Article page nav auto-hide and reveal behavior.
+- Music playback controls and persisted volume settings.
+- Mobile bottom tab bar does not cover critical actions.
 
-Example for `v1.0.0`:
+## Git Conventions
 
-```bash
-git tag -a v1.0.0 -m "v1.0.0"
-git push origin main
-git push origin v1.0.0
-```
+Use short Conventional Commit style messages:
 
-Then create a GitHub Release from the `v1.0.0` tag in the repository Releases tab.
-
-Suggested release note format:
-
-```md
-## v1.0.0
-
-### Fixed
-- Added fallback UI for archived articles with empty saved content.
-- Prevented long article URLs and media links from stretching the page horizontally.
-- Fixed Journal article navigation so browser Back returns to the article list.
-
-### Improved
-- Switched display typography to Noto Serif Display for better Vietnamese title rendering.
+```text
+feat: add reader focus mode
+fix: keep article archive on spiderum outages
+perf: reduce article loading cost
+docs: refresh project readme
 ```
 
 ## Troubleshooting
 
-### GitHub Push Fails With `Permission denied (publickey)`
+### Article Fetch Fails
 
-The local machine does not have an SSH key that GitHub accepts for the repo.
+Check `public/data/fetch-status.json` and the latest GitHub Actions run. Spiderum can return `503`; the current script should keep stored content when fallback data exists.
 
-Check SSH auth:
+### Article Opens Empty
 
-```bash
-ssh -T git@github.com
-```
+The metadata exists, but the matching file in `public/data/articles/` may be missing or unreadable. Re-run the fetch script or update the article content file.
 
-If needed, add a GitHub SSH key or switch the remote to an authenticated HTTPS setup.
+### Music Does Not Appear
 
-### `eslint` or `tsc` Is Not Found
+Confirm the MP3 is inside `public/musics/` and the matching URL exists in `public/data/tracks.json`.
 
-Dependencies are missing. Run:
+### Build Tools Missing
+
+Run:
 
 ```bash
 npm install
@@ -335,10 +211,6 @@ npm run lint
 npm run build
 ```
 
-### Article Opens But Looks Empty
-
-The metadata entry exists, but its matching content file may be empty or missing readable text. The UI will show a fallback message and source link when available. Re-run the article fetch script or manually update the matching file in `public/data/articles/`.
-
 ## License
 
-This repository is private. Treat the code, article data, audio, and video assets as project-owned unless a separate license is added.
+This repository is private. Treat the source code, article data, music, and video assets as project-owned unless a separate license is added.
