@@ -47,7 +47,7 @@ export default function Home({ isZenMode }: HomeProps) {
 
       {/* Featured Journal Section */}
       <section id="featured-journal" className="relative z-10 w-full overflow-hidden px-4 py-24 pb-36 sm:px-6 md:py-32">
-        <div className="absolute inset-0 bg-background/72 backdrop-blur-[2px]" />
+        <div className="absolute inset-0 bg-background/45 backdrop-blur-[1px]" />
         <div className="relative max-w-7xl mx-auto">
         <div className="mb-10 flex flex-col justify-between gap-6 md:mb-16 md:flex-row md:items-end md:gap-8">
           <div>
@@ -67,38 +67,38 @@ export default function Home({ isZenMode }: HomeProps) {
           {isLoading && Array.from({ length: 3 }).map((_, idx) => (
             <div
               key={idx}
-              className="liquid-glass min-h-[260px] rounded-lg p-6 animate-pulse md:min-h-[320px] md:p-8"
+              className="min-h-[220px] border-t border-white/18 py-6 animate-pulse md:min-h-[300px] md:py-8"
             />
           ))}
 
           {!isLoading && featuredArticles.map((entry, idx) => (
             <article 
               key={entry.article.id} 
-              className="group cursor-pointer liquid-glass liquid-glass-interactive rounded-lg p-6 flex flex-col animate-[fade-rise_0.6s_ease-out] md:p-8"
+              className="group flex min-h-[220px] cursor-pointer flex-col border-t border-white/18 py-6 transition-colors animate-[fade-rise_0.6s_ease-out] hover:border-white/45 md:min-h-[300px] md:py-8"
               style={{ animationDelay: `${idx * 0.15}s`, animationFillMode: 'both' }}
               onClick={() => {
                 navigate(`/journal/${encodeURIComponent(entry.article.id)}`);
               }}
             >
-              <span className="text-[11px] uppercase tracking-[0.24em] text-primary mb-5 font-mono">
+              <span className="mb-5 font-mono text-[11px] uppercase tracking-[0.24em] text-white/68">
                 {entry.label}
               </span>
-              <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground font-mono mb-6">
+              <div className="mb-6 flex flex-wrap items-center gap-4 font-mono text-xs text-white/58">
                 <span className="flex items-center gap-1"><Calendar size={12} /> {entry.article.date}</span>
                 <span className="flex items-center gap-1"><Clock size={12} /> {entry.article.readTime}</span>
               </div>
               
-              <h3 className="text-xl font-semibold text-foreground mb-4 group-hover:text-primary/80 transition-colors flex-1 sm:text-2xl" style={{ fontFamily: "'Noto Serif Display', serif" }}>
+              <h3 className="mb-4 flex-1 text-xl font-semibold leading-[1.15] text-white/95 transition-colors group-hover:text-white sm:text-2xl" style={{ fontFamily: "'Noto Serif Display', serif" }}>
                 {entry.article.title}
               </h3>
               
-              <p className="text-muted-foreground text-sm leading-relaxed mb-8 line-clamp-3">
+              <p className="mb-8 line-clamp-3 text-sm leading-relaxed text-white/68">
                 {entry.article.excerpt}
               </p>
 
               <div className="flex flex-wrap gap-2 mt-auto">
                 {entry.article.tags.map(tag => (
-                  <span key={tag} className="text-[10px] px-3 py-1 rounded-full bg-white/10 border border-white/20 text-white/80 backdrop-blur-sm">
+                  <span key={tag} className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/55">
                     {displayTagLabel(tag)}
                   </span>
                 ))}
@@ -108,7 +108,7 @@ export default function Home({ isZenMode }: HomeProps) {
         </div>
 
         {!isLoading && articles.length > 0 && (
-          <div className="mt-12 liquid-glass rounded-lg px-5 py-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-white/78 w-fit max-w-full md:mt-16 md:rounded-full">
+          <div className="mt-12 flex w-fit max-w-full flex-wrap items-center justify-center gap-x-4 gap-y-2 border-t border-white/18 pt-4 text-sm text-white/68 md:mt-16">
             <span className="whitespace-nowrap">
               Developed by Savagers<sup className="ml-0.5 text-[10px] leading-none">®</sup>
             </span>

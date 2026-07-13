@@ -332,17 +332,17 @@ export default function Journal({ isZenMode }: JournalProps) {
                         </button>
                       </div>
 
-                      <h2 className="text-3xl md:text-4xl font-semibold text-foreground mb-4 group-hover:text-primary/80 transition-colors" style={{ fontFamily: "'Noto Serif Display', serif" }}>
+                      <h2 className="mb-4 text-3xl font-semibold leading-[1.15] text-white/95 transition-colors group-hover:text-white md:text-4xl" style={{ fontFamily: "'Noto Serif Display', serif" }}>
                         {article.title}
                       </h2>
 
-                      <p className="text-muted-foreground text-base leading-relaxed mb-6">
+                      <p className="mb-6 text-base leading-relaxed text-white/68">
                         {article.excerpt}
                       </p>
 
                       <div className="flex flex-wrap gap-2">
                         {article.tags?.map((tag) => (
-                          <span key={tag} className="article-tag-pill text-xs px-3 py-1 rounded-full">
+                          <span key={tag} className="article-tag-pill font-mono text-xs">
                             {displayTagLabel(tag)}
                           </span>
                         ))}
