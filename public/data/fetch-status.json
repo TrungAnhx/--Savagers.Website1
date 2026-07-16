@@ -18,15 +18,15 @@
     "txnamStored": 10,
     "totalStored": 100
   },
-  "startedAt": "2026-07-15T02:26:40.776Z",
-  "finishedAt": "2026-07-15T02:27:34.150Z",
-  "lastSuccessAt": "2026-07-15T02:27:34.150Z",
+  "startedAt": "2026-07-16T02:34:46.119Z",
+  "finishedAt": "2026-07-16T02:34:59.511Z",
+  "lastSuccessAt": "2026-07-16T02:34:59.511Z",
   "consecutiveFailures": 0,
   "warnings": [
-    "Skipping Spiderum source https://spiderum.com/nguoi-dung/spiderum: Request failed for https://spiderum.com/nguoi-dung/spiderum: 503",
-    "Skipping Spiderum source https://spiderum.com/danh-muc/khoa-hoc-cong-nghe: Request failed for https://spiderum.com/danh-muc/khoa-hoc-cong-nghe: 503",
-    "Skipping Spiderum source https://spiderum.com/danh-muc/quan-diem-tranh-luan: Request failed for https://spiderum.com/danh-muc/quan-diem-tranh-luan: 503",
-    "Skipping Spiderum source https://spiderum.com/danh-muc/life-style: Request failed for https://spiderum.com/danh-muc/life-style: 503",
-    "Keeping 90 stored Spiderum articles because fresh Spiderum fetch failed: No Spiderum articles found. Failed sources: Skipping Spiderum source https://spiderum.com/nguoi-dung/spiderum: Request failed for https://spiderum.com/nguoi-dung/spiderum: 503 | Skipping Spiderum source https://spiderum.com/danh-muc/khoa-hoc-cong-nghe: Request failed for https://spiderum.com/danh-muc/khoa-hoc-cong-nghe: 503 | Skipping Spiderum source https://spiderum.com/danh-muc/quan-diem-tranh-luan: Request failed for https://spiderum.com/danh-muc/quan-diem-tranh-luan: 503 | Skipping Spiderum source https://spiderum.com/danh-muc/life-style: Request failed for https://spiderum.com/danh-muc/life-style: 503"
+    "Skipping Spiderum source https://spiderum.com/nguoi-dung/spiderum: Request failed for https://spiderum.com/nguoi-dung/spiderum: 403",
+    "Skipping Spiderum source https://spiderum.com/danh-muc/khoa-hoc-cong-nghe: Request failed for https://spiderum.com/danh-muc/khoa-hoc-cong-nghe: 403",
+    "Skipping Spiderum source https://spiderum.com/danh-muc/quan-diem-tranh-luan: Request failed for https://spiderum.com/danh-muc/quan-diem-tranh-luan: 403",
+    "Skipping Spiderum source https://spiderum.com/danh-muc/life-style: Request failed for https://spiderum.com/danh-muc/life-style: 403",
+    "Keeping 90 stored Spiderum articles because fresh Spiderum fetch failed: No Spiderum articles found. Failed sources: Skipping Spiderum source https://spiderum.com/nguoi-dung/spiderum: Request failed for https://spiderum.com/nguoi-dung/spiderum: 403 | Skipping Spiderum source https://spiderum.com/danh-muc/khoa-hoc-cong-nghe: Request failed for https://spiderum.com/danh-muc/khoa-hoc-cong-nghe: 403 | Skipping Spiderum source https://spiderum.com/danh-muc/quan-diem-tranh-luan: Request failed for https://spiderum.com/danh-muc/quan-diem-tranh-luan: 403 | Skipping Spiderum source https://spiderum.com/danh-muc/life-style: Request failed for https://spiderum.com/danh-muc/life-style: 403"
   ]
 }
