@@ -188,10 +188,10 @@ export default function Journal({ isZenMode }: JournalProps) {
         ) : !activeArticle ? (
           <div className="animate-[fade-rise_0.6s_ease-out]">
             <header className="mb-16">
-              <h1 className="text-6xl md:text-8xl font-semibold text-foreground mb-6" style={{ fontFamily: "'Noto Serif Display', serif" }}>
+              <h1 className="section-heading mb-6 text-6xl font-semibold text-foreground md:text-8xl" style={{ fontFamily: "'Noto Serif Display', serif" }}>
                 The Journal.
               </h1>
-              <p className="text-muted-foreground text-lg leading-relaxed max-w-xl mb-12">
+              <p className="journal-intro-copy mb-12 max-w-xl text-lg leading-relaxed text-white/[0.76]">
                 A rolling archive of up to 100 pieces from Spiderum and txnam. Read in silence.
               </p>
 
@@ -336,7 +336,7 @@ export default function Journal({ isZenMode }: JournalProps) {
                         {article.title}
                       </h2>
 
-                      <p className="mb-6 text-base leading-relaxed text-white/68">
+                      <p className="mb-6 text-base leading-relaxed text-white/[0.76]">
                         {article.excerpt}
                       </p>
 

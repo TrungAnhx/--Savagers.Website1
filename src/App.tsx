@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, useMemo, useState } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import {
   BookOpen,
@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import notesData from './data/notes.json';
 import { useAudioPlayer } from './hooks/useAudioPlayer';
+import { useNavigationChrome } from './hooks/useNavigationChrome';
 import { getStoredItem, setStoredItem } from './utils/storage';
 
 const FloatingNotes = lazy(() => import('./components/FloatingNotes'));
@@ -53,10 +54,11 @@ function Layout() {
   const allNotes = useMemo(() => [...notesData, ...customNotes], [customNotes]);
   const location = useLocation();
   const isReadingArticle = /^\/journal\/[^/]+/.test(location.pathname);
-  const [isChromeHidden, setIsChromeHidden] = useState(false);
-  const chromeHiddenRef = useRef(false);
-  const lastScrollYRef = useRef(0);
-  const scrollFrameRef = useRef<number | null>(null);
+  const {
+    isHidden: isChromeHidden,
+    isScrolled: isNavigationScrolled,
+    reveal: revealChrome,
+  } = useNavigationChrome(isReadingArticle);
 
   const {
     audioRef,
@@ -101,65 +103,6 @@ function Layout() {
     setStoredItem('savagers_showWhispers', JSON.stringify(nextValue));
   };
 
-  const revealChrome = () => {
-    if (!chromeHiddenRef.current) return;
-    chromeHiddenRef.current = false;
-    setIsChromeHidden(false);
-  };
-
-  useEffect(() => {
-    if (!isReadingArticle) {
-      chromeHiddenRef.current = false;
-      return;
-    }
-
-    lastScrollYRef.current = window.scrollY;
-    let resetFrameId: number | null = null;
-
-    if (window.scrollY < 120 && chromeHiddenRef.current) {
-      chromeHiddenRef.current = false;
-      resetFrameId = window.requestAnimationFrame(() => {
-        setIsChromeHidden(false);
-      });
-    }
-
-    const updateChromeHidden = (nextHidden: boolean) => {
-      if (chromeHiddenRef.current === nextHidden) return;
-      chromeHiddenRef.current = nextHidden;
-      setIsChromeHidden(nextHidden);
-    };
-
-    const handleScroll = () => {
-      if (scrollFrameRef.current !== null) return;
-
-      scrollFrameRef.current = window.requestAnimationFrame(() => {
-        const currentScrollY = window.scrollY;
-        const scrollDelta = currentScrollY - lastScrollYRef.current;
-
-        if (currentScrollY < 120 || scrollDelta < -8) {
-          updateChromeHidden(false);
-        } else if (scrollDelta > 8 && currentScrollY > 220) {
-          updateChromeHidden(true);
-        }
-
-        lastScrollYRef.current = currentScrollY;
-        scrollFrameRef.current = null;
-      });
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      if (resetFrameId !== null) {
-        window.cancelAnimationFrame(resetFrameId);
-      }
-      if (scrollFrameRef.current !== null) {
-        window.cancelAnimationFrame(scrollFrameRef.current);
-        scrollFrameRef.current = null;
-      }
-    };
-  }, [isReadingArticle]);
-
   const effectiveChromeHidden = isReadingArticle && isChromeHidden;
   const topNavVisibilityClass = isZenMode
     ? 'opacity-0 pointer-events-none -translate-y-6'
@@ -201,9 +144,10 @@ function Layout() {
         ) : null}
 
         <nav
-          className={`fixed left-3 right-3 top-3 z-50 mx-auto grid min-h-[56px] max-w-[88rem] grid-cols-[1fr_auto] items-center gap-2 rounded-full px-3 py-2 md:left-4 md:right-4 md:top-4 md:min-h-[72px] md:grid-cols-[minmax(9rem,1fr)_auto_minmax(9rem,1fr)] md:gap-4 md:px-10 md:py-4 liquid-glass transition-[opacity,transform,box-shadow,background] duration-500 ease-out ${topNavVisibilityClass}`}
+          className={`navigation-glass fixed left-3 right-3 top-[calc(0.75rem+env(safe-area-inset-top))] z-50 mx-auto grid min-h-[56px] max-w-[88rem] grid-cols-[1fr_auto] items-center gap-2 rounded-full px-3 py-2 transition-[opacity,transform] duration-500 ease-out md:left-4 md:right-4 md:top-4 md:min-h-[72px] md:grid-cols-[minmax(9rem,1fr)_auto_minmax(9rem,1fr)] md:gap-4 md:px-10 md:py-4 ${isNavigationScrolled ? 'navigation-glass-scrolled' : 'navigation-glass-resting'} ${topNavVisibilityClass}`}
           onMouseEnter={revealChrome}
           onFocusCapture={revealChrome}
+          aria-label="Primary navigation"
         >
           <div className="flex min-w-0 justify-start">
             <Link to="/" className="font-display text-xl text-foreground sm:text-2xl md:text-3xl">
@@ -212,16 +156,16 @@ function Layout() {
           </div>
 
           <div className="hidden items-center justify-center gap-6 md:flex lg:gap-8">
-            <Link to="/" className={`text-sm transition-colors hover:text-foreground ${isHome ? 'text-foreground' : 'text-muted-foreground'}`}>Home</Link>
-            <Link to="/mixtapes" className={`text-sm transition-colors hover:text-foreground ${isMixtapes ? 'text-foreground' : 'text-muted-foreground'}`}>Frequencies</Link>
-            <Link to="/journal" className={`text-sm transition-colors hover:text-foreground ${location.pathname.startsWith('/journal') ? 'text-foreground' : 'text-muted-foreground'}`}>Chronicles</Link>
-            <Link to="/about" className={`text-sm transition-colors hover:text-foreground ${location.pathname === '/about' ? 'text-foreground' : 'text-muted-foreground'}`}>About</Link>
+            <Link to="/" className={`navigation-link ${isHome ? 'navigation-link-active' : ''}`}>Home</Link>
+            <Link to="/mixtapes" className={`navigation-link ${isMixtapes ? 'navigation-link-active' : ''}`}>Frequencies</Link>
+            <Link to="/journal" className={`navigation-link ${location.pathname.startsWith('/journal') ? 'navigation-link-active' : ''}`}>Chronicles</Link>
+            <Link to="/about" className={`navigation-link ${location.pathname === '/about' ? 'navigation-link-active' : ''}`}>About</Link>
           </div>
 
           <div className="flex min-w-0 items-center justify-end gap-2 md:gap-2.5 lg:gap-3">
             <button
               onClick={toggleWhispers}
-              className={`liquid-glass liquid-glass-interactive hidden rounded-full px-4 py-2.5 text-sm cursor-pointer md:flex min-w-[116px] items-center justify-center gap-2 ${showWhispers ? 'liquid-glass-active text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+              className={`navigation-control hidden min-w-[116px] cursor-pointer items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm md:flex ${showWhispers ? 'navigation-control-active text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
               title={showWhispers ? 'Hide ambient notes' : 'Show ambient notes'}
               aria-label={showWhispers ? 'Hide ambient notes' : 'Show ambient notes'}
             >
@@ -231,7 +175,7 @@ function Layout() {
 
             <button
               onClick={toggleWhispers}
-              className={`liquid-glass liquid-glass-interactive rounded-full px-3 py-2 text-sm cursor-pointer flex h-10 w-10 items-center justify-center md:hidden ${showWhispers ? 'liquid-glass-active text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+              className={`navigation-control flex h-10 w-10 cursor-pointer items-center justify-center rounded-full px-3 py-2 text-sm md:hidden ${showWhispers ? 'navigation-control-active text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
               title={showWhispers ? 'Hide ambient notes' : 'Show ambient notes'}
               aria-label={showWhispers ? 'Hide ambient notes' : 'Show ambient notes'}
             >
@@ -240,10 +184,10 @@ function Layout() {
 
             {isHome ? (
               <>
-                <button onClick={togglePlay} className="liquid-glass liquid-glass-interactive hidden rounded-full px-5 py-2.5 text-sm text-foreground cursor-pointer min-w-[92px] md:flex md:items-center md:justify-center">
+                <button onClick={togglePlay} className="navigation-control hidden min-w-[92px] cursor-pointer rounded-full px-5 py-2.5 text-sm text-foreground md:flex md:items-center md:justify-center">
                   {isPlaying ? 'Pause' : 'Tune In'}
                 </button>
-                <button onClick={togglePlay} className="liquid-glass liquid-glass-interactive text-foreground hover:text-muted-foreground transition-colors cursor-pointer flex h-10 w-10 items-center justify-center rounded-full" aria-label="Toggle ambient sound">
+                <button onClick={togglePlay} className="navigation-control flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-foreground hover:text-muted-foreground" aria-label="Toggle ambient sound">
                   {isPlaying ? <Volume2 size={20} /> : <VolumeX size={20} />}
                 </button>
               </>
@@ -252,7 +196,7 @@ function Layout() {
         </nav>
 
         <nav
-          className={`fixed left-3 right-3 z-50 grid grid-cols-4 gap-1 rounded-full px-2 py-2 md:hidden liquid-glass transition-[opacity,transform] duration-500 ease-out ${bottomNavVisibilityClass}`}
+          className={`navigation-glass navigation-glass-scrolled mobile-navigation-glass fixed left-3 right-3 z-50 grid grid-cols-4 gap-1 rounded-full px-2 py-2 transition-[opacity,transform] duration-500 ease-out md:hidden ${bottomNavVisibilityClass}`}
           style={{ bottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
           aria-label="Mobile navigation"
         >
@@ -263,7 +207,7 @@ function Layout() {
                 key={item.to}
                 to={item.to}
                 className={`flex min-h-[48px] min-w-0 flex-col items-center justify-center gap-1 rounded-full px-1 text-[10px] transition-colors ${
-                  item.active ? 'liquid-glass-active text-foreground' : 'text-muted-foreground hover:text-foreground'
+                  item.active ? 'navigation-item-active text-foreground' : 'text-muted-foreground hover:text-foreground'
                 }`}
                 aria-current={item.active ? 'page' : undefined}
               >
