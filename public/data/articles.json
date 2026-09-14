@@ -1,5 +1,22 @@
 [
   {
+    "id": "unix-tinh-than-bat-tu.html",
+    "title": "Unix – Tinh thần bất tử",
+    "date": "13 tháng 9, 2026",
+    "publishedAt": "2026-09-13T00:00:00.000Z",
+    "readTime": "14 min read",
+    "excerpt": "Hôm nay là ngày Lập trình viên (ngày thứ 256 của năm), từ năm nay mỗi ngày này tôi sẽ đăng một bài về những tượng đài của ngành.",
+    "tags": [
+      "Unix",
+      "–",
+      "Tinh",
+      "thần",
+      "bất"
+    ],
+    "link": "https://txnam.net/unix-tinh-than-bat-tu.html",
+    "source": "txnam"
+  },
+  {
     "id": "Cau-chuyen-dang-sau-moi-quan-he-Donald-Trump-va-Dana-White-Nguu-tam-nguu-ma-tam-ma-cTPK7AGCrOpI",
     "title": "Câu chuyện đằng sau mối quan hệ Donald Trump và Dana White: Ngưu tầm ngưu, mã tầm mã",
     "date": "25 tháng 6, 2026",
@@ -1449,23 +1466,6 @@
       "của"
     ],
     "link": "https://txnam.net/nhung-quy-luat-vui-cua-cuoc-song-phan-1.html",
-    "source": "txnam"
-  },
-  {
-    "id": "kien-truc-dep-phan-1.html",
-    "title": "Kiến trúc đẹp (phần 1)",
-    "date": "24 tháng 11, 2021",
-    "publishedAt": "2021-11-24T00:00:00.000Z",
-    "readTime": "4 min read",
-    "excerpt": "Những kiệt tác kiến trúc được tham khảo từ trang KORZIK, trong đó có cả Cầu Vàng ở Đà Nẵng của Việt Nam.",
-    "tags": [
-      "Kiến",
-      "trúc",
-      "đẹp",
-      "(phần",
-      "1)"
-    ],
-    "link": "https://txnam.net/kien-truc-dep-phan-1.html",
     "source": "txnam"
   }
 ]
