@@ -18,9 +18,9 @@
     "txnamStored": 10,
     "totalStored": 100
   },
-  "startedAt": "2026-10-14T03:45:06.973Z",
-  "finishedAt": "2026-10-14T03:45:33.064Z",
-  "lastSuccessAt": "2026-10-14T03:45:33.064Z",
+  "startedAt": "2026-10-15T03:26:47.186Z",
+  "finishedAt": "2026-10-15T03:27:10.791Z",
+  "lastSuccessAt": "2026-10-15T03:27:10.791Z",
   "consecutiveFailures": 0,
   "warnings": [
     "Skipping Spiderum source https://spiderum.com/nguoi-dung/spiderum: Request failed for https://spiderum.com/nguoi-dung/spiderum: 403",
